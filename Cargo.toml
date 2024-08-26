@@ -1,0 +1,8 @@
+[package]
+name = "mapctl"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+reqwest = { version = "0.12.7", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+serde_json = { version = "1.0.127", default-features = false }
