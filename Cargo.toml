@@ -4,5 +4,15 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+
+# https://docs.rs/crate/reqwest
 reqwest = { version = "0.12.7", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+
+# https://docs.rs/crate/serde_json
 serde_json = { version = "1.0.127", default-features = false }
+
+# https://docs.rs/crate/dirs
+dirs = { version = "5.0.1", default-features = false }
+
+# https://docs.rs/crate/rusqlite
+rusqlite = { version = "0.32.1", default-features = false, features = ["bundled"] }
