@@ -59,6 +59,47 @@ fn main() {
             .unwrap();
             println!("Saved {token} as a token for all future calls");
         }
+        "get-element" => {
+            let id = args[2].clone();
+            let client = reqwest::blocking::Client::new();
+            let args = json!(
+                {"jsonrpc": "2.0", "method": "getelement", "params": {"token": token, "id": id}, "id": 1}
+            );
+            println!("{args}");
+            let res = client
+                .post("https://api.btcmap.org/rpc")
+                .body(serde_json::to_string(&args).unwrap())
+                .send()
+                .unwrap()
+                .json::<Map<String, Value>>()
+                .unwrap()
+                .get("result")
+                .unwrap()
+                .clone();
+            let res = serde_json::to_string_pretty(&res).unwrap();
+            println!("{}", res);
+        }
+        "boost-element" => {
+            let id = args[2].clone();
+            let days: i64 = args[3].parse().unwrap();
+            let client = reqwest::blocking::Client::new();
+            let args = json!(
+                {"jsonrpc":"2.0","method":"boostelement","params":{"token":token,"id":id,"days":days},"id":1}
+            );
+            println!("{args}");
+            let res = client
+                .post("https://api.btcmap.org/rpc")
+                .body(serde_json::to_string(&args).unwrap())
+                .send()
+                .unwrap()
+                .json::<Map<String, Value>>()
+                .unwrap()
+                .get("result")
+                .unwrap()
+                .clone();
+            let res = serde_json::to_string_pretty(&res).unwrap();
+            println!("{}", res);
+        }
         "get-area" => {
             let id = args[2].clone();
             let client = reqwest::blocking::Client::new();
@@ -136,26 +177,6 @@ fn main() {
                 .as_object_mut()
                 .unwrap()
                 .remove("geo_json");
-            let res = serde_json::to_string_pretty(&res).unwrap();
-            println!("{}", res);
-        }
-        "get-element" => {
-            let id = args[2].clone();
-            let client = reqwest::blocking::Client::new();
-            let args = json!(
-                {"jsonrpc": "2.0", "method": "getelement", "params": {"token": token, "id": id}, "id": 1}
-            );
-            println!("{args}");
-            let res = client
-                .post("https://api.btcmap.org/rpc")
-                .body(serde_json::to_string(&args).unwrap())
-                .send()
-                .unwrap()
-                .json::<Map<String, Value>>()
-                .unwrap()
-                .get("result")
-                .unwrap()
-                .clone();
             let res = serde_json::to_string_pretty(&res).unwrap();
             println!("{}", res);
         }
