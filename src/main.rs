@@ -100,6 +100,27 @@ fn main() {
             let res = serde_json::to_string_pretty(&res).unwrap();
             println!("{}", res);
         }
+        "create-element-review" => {
+            let id = args[2].clone();
+            let reveiw = args[3].clone();
+            let client = reqwest::blocking::Client::new();
+            let args = json!(
+                {"jsonrpc":"2.0","method":"createelementreview","params":{"token":token,"id":id,"review":reveiw},"id":1}
+            );
+            println!("{args}");
+            let res = client
+                .post("https://api.btcmap.org/rpc")
+                .body(serde_json::to_string(&args).unwrap())
+                .send()
+                .unwrap()
+                .json::<Map<String, Value>>()
+                .unwrap()
+                .get("result")
+                .unwrap()
+                .clone();
+            let res = serde_json::to_string_pretty(&res).unwrap();
+            println!("{}", res);
+        }
         "get-area" => {
             let id = args[2].clone();
             let client = reqwest::blocking::Client::new();
