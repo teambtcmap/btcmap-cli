@@ -201,6 +201,48 @@ fn main() {
             let res = serde_json::to_string_pretty(&res).unwrap();
             println!("{}", res);
         }
+        "get-trending-countries" => {
+            let period_start = args[2].clone();
+            let period_end = args[3].clone();
+            let client = reqwest::blocking::Client::new();
+            let args = json!(
+                {"jsonrpc":"2.0","method":"gettrendingcountries","params":{"token":token,"period_start":period_start,"period_end":period_end},"id":1}
+            );
+            println!("{args}");
+            let res = client
+                .post("https://api.btcmap.org/rpc")
+                .body(serde_json::to_string(&args).unwrap())
+                .send()
+                .unwrap()
+                .json::<Map<String, Value>>()
+                .unwrap()
+                .get("result")
+                .unwrap()
+                .clone();
+            let res = serde_json::to_string_pretty(&res).unwrap();
+            println!("{}", res);
+        }
+        "get-trending-communities" => {
+            let period_start = args[2].clone();
+            let period_end = args[3].clone();
+            let client = reqwest::blocking::Client::new();
+            let args = json!(
+                {"jsonrpc":"2.0","method":"gettrendingcommunities","params":{"token":token,"period_start":period_start,"period_end":period_end},"id":1}
+            );
+            println!("{args}");
+            let res = client
+                .post("https://api.btcmap.org/rpc")
+                .body(serde_json::to_string(&args).unwrap())
+                .send()
+                .unwrap()
+                .json::<Map<String, Value>>()
+                .unwrap()
+                .get("result")
+                .unwrap()
+                .clone();
+            let res = serde_json::to_string_pretty(&res).unwrap();
+            println!("{}", res);
+        }
         _ => {}
     }
 }
