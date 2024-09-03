@@ -2,53 +2,19 @@ use dirs::data_dir;
 use rusqlite::params;
 use rusqlite::Connection;
 use serde_json::{json, Map, Value};
+use std::path::PathBuf;
 use std::{env, fs::create_dir};
 
 fn main() {
-    let data_dir = data_dir().unwrap().join("mapctl");
-    println!("Data dir: {}", data_dir.to_str().unwrap());
-
-    if !data_dir.exists() {
-        print!("Data dir did not exist, creating...");
-        create_dir(&data_dir).unwrap();
-    }
-
-    let conn = Connection::open(data_dir.join("mapctl.db")).unwrap();
-
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS settings (json TEXT NOT NULL);",
-        (), // empty list of parameters.
-    )
-    .unwrap();
-
-    let mut stmt = conn.prepare("SELECT COUNT (*) FROM settings;").unwrap();
-    let mut rows = stmt.query(()).unwrap();
-    let first_row = rows.next().unwrap().unwrap();
-    let rows: i64 = first_row.get(0).unwrap();
-
-    if rows == 0 {
-        conn.execute("INSERT INTO settings (json) VALUES (json('{}'))", ())
-            .unwrap();
-    }
-
-    let mut stmt = conn
-        .prepare("SELECT json_extract(json, '$.token') FROM settings;")
-        .unwrap();
-    let mut rows = stmt.query(()).unwrap();
-
-    let token: String = match rows.next().unwrap() {
-        Some(first_row) => first_row.get(0).unwrap_or("".into()),
-        None => "".into(),
-    };
-
+    let conn = Connection::open(db_path()).unwrap();
+    init_db(&conn);
+    let token = get_token(&conn);
     let args: Vec<String> = env::args().collect();
     let command = args[1].as_str();
-
     if token.is_empty() && command != "set-token" {
         println!("You're not autorized. Please run mapctl set-token <token>");
         return;
     }
-
     match command {
         "set-token" => {
             let token = args[2].clone();
@@ -100,7 +66,7 @@ fn main() {
             let res = serde_json::to_string_pretty(&res).unwrap();
             println!("{}", res);
         }
-        "create-element-review" => {
+        "add-element-review" => {
             let id = args[2].clone();
             let reveiw = args[3].clone();
             let client = reqwest::blocking::Client::new();
@@ -244,5 +210,40 @@ fn main() {
             println!("{}", res);
         }
         _ => {}
+    }
+}
+
+fn db_path() -> PathBuf {
+    let data_dir = data_dir().unwrap().join("mapctl");
+    if !data_dir.exists() {
+        create_dir(&data_dir).unwrap();
+    }
+    data_dir.join("mapctl.db")
+}
+
+fn init_db(conn: &Connection) {
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS settings (json TEXT NOT NULL);",
+        (),
+    )
+    .unwrap();
+    let mut stmt = conn.prepare("SELECT COUNT (*) FROM settings;").unwrap();
+    let mut rows = stmt.query(()).unwrap();
+    let first_row = rows.next().unwrap().unwrap();
+    let rows: i64 = first_row.get(0).unwrap();
+    if rows == 0 {
+        conn.execute("INSERT INTO settings (json) VALUES (json('{}'))", ())
+            .unwrap();
+    }
+}
+
+fn get_token(conn: &Connection) -> String {
+    let mut stmt = conn
+        .prepare("SELECT json_extract(json, '$.token') FROM settings;")
+        .unwrap();
+    let mut rows = stmt.query(()).unwrap();
+    match rows.next().unwrap() {
+        Some(first_row) => first_row.get(0).unwrap_or("".into()),
+        None => "".into(),
     }
 }
