@@ -46,7 +46,7 @@ fn main() {
             println!("{}", res);
         }
         "boost-element" => {
-            let id = args[2].clone();
+            let id = args[2].clone().replace("=", ":");
             let days: i64 = args[3].parse().unwrap();
             let client = reqwest::blocking::Client::new();
             let args = json!(
@@ -67,11 +67,11 @@ fn main() {
             println!("{}", res);
         }
         "add-element-review" => {
-            let id = args[2].clone();
+            let id = args[2].clone().replace("=", ":");
             let reveiw = args[3].clone();
             let client = reqwest::blocking::Client::new();
             let args = json!(
-                {"jsonrpc":"2.0","method":"createelementreview","params":{"token":token,"id":id,"review":reveiw},"id":1}
+                {"jsonrpc":"2.0","method":"addelementreview","params":{"token":token,"id":id,"review":reveiw},"id":1}
             );
             println!("{args}");
             let res = client
