@@ -209,6 +209,25 @@ fn main() {
             let res = serde_json::to_string_pretty(&res).unwrap();
             println!("{}", res);
         }
+        "generate-element-issues" => {
+            let client = reqwest::blocking::Client::new();
+            let args = json!(
+                {"jsonrpc":"2.0","method":"generateelementissues","params":{"token":token},"id":1}
+            );
+            println!("{args}");
+            let res = client
+                .post("https://api.btcmap.org/rpc")
+                .body(serde_json::to_string(&args).unwrap())
+                .send()
+                .unwrap()
+                .json::<Map<String, Value>>()
+                .unwrap()
+                .get("result")
+                .unwrap()
+                .clone();
+            let res = serde_json::to_string_pretty(&res).unwrap();
+            println!("{}", res);
+        }
         _ => {}
     }
 }
