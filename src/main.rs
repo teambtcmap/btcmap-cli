@@ -66,12 +66,12 @@ fn main() {
             let res = serde_json::to_string_pretty(&res).unwrap();
             println!("{}", res);
         }
-        "add-element-review" => {
+        "add-element-comment" => {
             let id = args[2].clone().replace("=", ":");
             let reveiw = args[3].clone();
             let client = reqwest::blocking::Client::new();
             let args = json!(
-                {"jsonrpc":"2.0","method":"addelementreview","params":{"token":token,"id":id,"review":reveiw},"id":1}
+                {"jsonrpc":"2.0","method":"addelementcomment","params":{"token":token,"id":id,"review":reveiw},"id":1}
             );
             println!("{args}");
             let res = client
