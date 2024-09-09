@@ -15,6 +15,8 @@ fn main() {
         println!("You're not autorized. Please run mapctl set-token <token>");
         return;
     }
+    let api_url = "https://api.btcmap.org/rpc";
+    //let api_url = "http://127.0.0.1:8000/rpc";
     match command {
         "set-token" => {
             let token = args[2].clone();
@@ -33,7 +35,7 @@ fn main() {
             );
             println!("{args}");
             let res = client
-                .post("https://api.btcmap.org/rpc")
+                .post(api_url)
                 .body(serde_json::to_string(&args).unwrap())
                 .send()
                 .unwrap()
@@ -54,7 +56,7 @@ fn main() {
             );
             println!("{args}");
             let res = client
-                .post("https://api.btcmap.org/rpc")
+                .post(api_url)
                 .body(serde_json::to_string(&args).unwrap())
                 .send()
                 .unwrap()
@@ -75,7 +77,7 @@ fn main() {
             );
             println!("{args}");
             let res = client
-                .post("https://api.btcmap.org/rpc")
+                .post(api_url)
                 .body(serde_json::to_string(&args).unwrap())
                 .send()
                 .unwrap()
@@ -95,7 +97,7 @@ fn main() {
             );
             println!("{args}");
             let mut res = client
-                .post("https://api.btcmap.org/rpc")
+                .post(api_url)
                 .body(serde_json::to_string(&args).unwrap())
                 .send()
                 .unwrap()
@@ -124,7 +126,7 @@ fn main() {
             );
             println!("{args}");
             let mut res = client
-                .post("https://api.btcmap.org/rpc")
+                .post(api_url)
                 .body(serde_json::to_string(&args).unwrap())
                 .send()
                 .unwrap()
@@ -150,7 +152,7 @@ fn main() {
             );
             println!("{args}");
             let mut res = client
-                .post("https://api.btcmap.org/rpc")
+                .post(api_url)
                 .body(serde_json::to_string(&args).unwrap())
                 .send()
                 .unwrap()
@@ -176,7 +178,7 @@ fn main() {
             );
             println!("{args}");
             let res = client
-                .post("https://api.btcmap.org/rpc")
+                .post(api_url)
                 .body(serde_json::to_string(&args).unwrap())
                 .send()
                 .unwrap()
@@ -197,7 +199,7 @@ fn main() {
             );
             println!("{args}");
             let res = client
-                .post("https://api.btcmap.org/rpc")
+                .post(api_url)
                 .body(serde_json::to_string(&args).unwrap())
                 .send()
                 .unwrap()
@@ -216,7 +218,27 @@ fn main() {
             );
             println!("{args}");
             let res = client
-                .post("https://api.btcmap.org/rpc")
+                .post(api_url)
+                .body(serde_json::to_string(&args).unwrap())
+                .send()
+                .unwrap()
+                .json::<Map<String, Value>>()
+                .unwrap()
+                .get("result")
+                .unwrap()
+                .clone();
+            let res = serde_json::to_string_pretty(&res).unwrap();
+            println!("{}", res);
+        }
+        "get-most-commented-countries" => {
+            let period_start = args[2].clone();
+            let period_end = args[3].clone();
+            let client = reqwest::blocking::Client::new();
+            let args = json!(
+                {"jsonrpc":"2.0","method":"getmostcommentedcountries","params":{"token":token,"period_start":period_start,"period_end":period_end},"id":1}
+            );
+            let res = client
+                .post(api_url)
                 .body(serde_json::to_string(&args).unwrap())
                 .send()
                 .unwrap()
