@@ -1,4 +1,5 @@
 use dirs::data_dir;
+use reqwest::blocking::ClientBuilder;
 use rusqlite::params;
 use rusqlite::Connection;
 use serde_json::{json, Map, Value};
@@ -17,6 +18,7 @@ fn main() {
     }
     let api_url = "https://api.btcmap.org/rpc";
     //let api_url = "http://127.0.0.1:8000/rpc";
+    let client = ClientBuilder::new().timeout(None).build().unwrap();
     match command {
         "set-token" => {
             let token = args[2].clone();
@@ -29,7 +31,6 @@ fn main() {
         }
         "get-element" => {
             let id = args[2].clone();
-            let client = reqwest::blocking::Client::new();
             let args = json!(
                 {"jsonrpc": "2.0", "method": "getelement", "params": {"token": token, "id": id}, "id": 1}
             );
@@ -50,7 +51,6 @@ fn main() {
         "boost-element" => {
             let id = args[2].clone().replace("=", ":");
             let days: i64 = args[3].parse().unwrap();
-            let client = reqwest::blocking::Client::new();
             let args = json!(
                 {"jsonrpc":"2.0","method":"boostelement","params":{"token":token,"id":id,"days":days},"id":1}
             );
@@ -71,7 +71,6 @@ fn main() {
         "add-element-comment" => {
             let id = args[2].clone().replace("=", ":");
             let reveiw = args[3].clone();
-            let client = reqwest::blocking::Client::new();
             let args = json!(
                 {"jsonrpc":"2.0","method":"addelementcomment","params":{"token":token,"id":id,"review":reveiw},"id":1}
             );
@@ -91,7 +90,6 @@ fn main() {
         }
         "get-area" => {
             let id = args[2].clone();
-            let client = reqwest::blocking::Client::new();
             let args = json!(
                 {"jsonrpc": "2.0", "method": "getarea", "params": {"token": token, "id": id}, "id": 1}
             );
@@ -120,7 +118,6 @@ fn main() {
             let value = args[4].clone();
             println!("{}", value);
             let value: Value = serde_json::from_str(&value).unwrap();
-            let client = reqwest::blocking::Client::new();
             let args = json!(
                 {"jsonrpc": "2.0", "method": "setareatag", "params": {"token": token, "id": id, "name": name, "value": value}, "id": 1}
             );
@@ -146,7 +143,6 @@ fn main() {
         "remove-area-tag" => {
             let id = args[2].clone();
             let tag = args[3].clone();
-            let client = reqwest::blocking::Client::new();
             let args = json!(
                 {"jsonrpc": "2.0", "method": "removeareatag", "params": {"token": token, "id": id, "tag": tag}, "id": 1}
             );
@@ -172,7 +168,6 @@ fn main() {
         "get-trending-countries" => {
             let period_start = args[2].clone();
             let period_end = args[3].clone();
-            let client = reqwest::blocking::Client::new();
             let args = json!(
                 {"jsonrpc":"2.0","method":"gettrendingcountries","params":{"token":token,"period_start":period_start,"period_end":period_end},"id":1}
             );
@@ -193,7 +188,6 @@ fn main() {
         "get-trending-communities" => {
             let period_start = args[2].clone();
             let period_end = args[3].clone();
-            let client = reqwest::blocking::Client::new();
             let args = json!(
                 {"jsonrpc":"2.0","method":"gettrendingcommunities","params":{"token":token,"period_start":period_start,"period_end":period_end},"id":1}
             );
@@ -212,7 +206,6 @@ fn main() {
             println!("{}", res);
         }
         "generate-element-issues" => {
-            let client = reqwest::blocking::Client::new();
             let args = json!(
                 {"jsonrpc":"2.0","method":"generateelementissues","params":{"token":token},"id":1}
             );
@@ -233,7 +226,6 @@ fn main() {
         "get-most-commented-countries" => {
             let period_start = args[2].clone();
             let period_end = args[3].clone();
-            let client = reqwest::blocking::Client::new();
             let args = json!(
                 {"jsonrpc":"2.0","method":"getmostcommentedcountries","params":{"token":token,"period_start":period_start,"period_end":period_end},"id":1}
             );
