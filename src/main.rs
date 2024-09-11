@@ -242,6 +242,25 @@ fn main() {
             let res = serde_json::to_string_pretty(&res).unwrap();
             println!("{}", res);
         }
+        "generate-areas-elements-mapping" => {
+            let from_element_id: i64 = args[2].clone().parse().unwrap();
+            let to_element_id: i64 = args[3].clone().parse().unwrap();
+            let args = json!(
+                {"jsonrpc":"2.0","method":"generateareaselementsmapping","params":{"token":token,"from_element_id":from_element_id,"to_element_id":to_element_id},"id":1}
+            );
+            let res = client
+                .post(api_url)
+                .body(serde_json::to_string(&args).unwrap())
+                .send()
+                .unwrap()
+                .json::<Map<String, Value>>()
+                .unwrap()
+                .get("result")
+                .unwrap()
+                .clone();
+            let res = serde_json::to_string_pretty(&res).unwrap();
+            println!("{}", res);
+        }
         _ => {}
     }
 }
