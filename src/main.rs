@@ -70,9 +70,9 @@ fn main() {
         }
         "add-element-comment" => {
             let id = args[2].clone().replace("=", ":");
-            let reveiw = args[3].clone();
+            let comment = args[3].clone();
             let args = json!(
-                {"jsonrpc":"2.0","method":"addelementcomment","params":{"token":token,"id":id,"review":reveiw},"id":1}
+                {"jsonrpc":"2.0","method":"addelementcomment","params":{"token":token,"id":id,"comment":comment},"id":1}
             );
             println!("{args}");
             let res = client
@@ -81,10 +81,7 @@ fn main() {
                 .send()
                 .unwrap()
                 .json::<Map<String, Value>>()
-                .unwrap()
-                .get("result")
-                .unwrap()
-                .clone();
+                .unwrap();
             let res = serde_json::to_string_pretty(&res).unwrap();
             println!("{}", res);
         }
