@@ -1,5 +1,6 @@
 use dirs::data_dir;
 use reqwest::blocking::ClientBuilder;
+use reqwest::blocking::Response;
 use rusqlite::params;
 use rusqlite::Connection;
 use serde_json::{json, Map, Value};
@@ -54,19 +55,24 @@ fn main() {
             let args = json!(
                 {"jsonrpc":"2.0","method":"boostelement","params":{"token":token,"id":id,"days":days},"id":1}
             );
-            println!("{args}");
             let res = client
                 .post(api_url)
                 .body(serde_json::to_string(&args).unwrap())
-                .send()
-                .unwrap()
-                .json::<Map<String, Value>>()
-                .unwrap()
-                .get("result")
-                .unwrap()
-                .clone();
-            let res = serde_json::to_string_pretty(&res).unwrap();
-            println!("{}", res);
+                .send();
+            match res {
+                Ok(res) => {
+                    if res.status().is_success() {
+                        let res = res.json::<Map<String, Value>>().unwrap();
+                        let res = serde_json::to_string_pretty(&res).unwrap();
+                        println!("{}", res);
+                    } else {
+                        handle_unsuccessful_response(res);
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                }
+            }
         }
         "add-element-comment" => {
             let id = args[2].clone().replace("=", ":");
@@ -74,16 +80,24 @@ fn main() {
             let args = json!(
                 {"jsonrpc":"2.0","method":"addelementcomment","params":{"token":token,"id":id,"comment":comment},"id":1}
             );
-            println!("{args}");
             let res = client
                 .post(api_url)
                 .body(serde_json::to_string(&args).unwrap())
-                .send()
-                .unwrap()
-                .json::<Map<String, Value>>()
-                .unwrap();
-            let res = serde_json::to_string_pretty(&res).unwrap();
-            println!("{}", res);
+                .send();
+            match res {
+                Ok(res) => {
+                    if res.status().is_success() {
+                        let res = res.json::<Map<String, Value>>().unwrap();
+                        let res = serde_json::to_string_pretty(&res).unwrap();
+                        println!("{}", res);
+                    } else {
+                        handle_unsuccessful_response(res);
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                }
+            }
         }
         "get-area" => {
             let id = args[2].clone();
@@ -206,19 +220,24 @@ fn main() {
             let args = json!(
                 {"jsonrpc":"2.0","method":"generateelementissues","params":{"token":token},"id":1}
             );
-            println!("{args}");
             let res = client
                 .post(api_url)
                 .body(serde_json::to_string(&args).unwrap())
-                .send()
-                .unwrap()
-                .json::<Map<String, Value>>()
-                .unwrap()
-                .get("result")
-                .unwrap()
-                .clone();
-            let res = serde_json::to_string_pretty(&res).unwrap();
-            println!("{}", res);
+                .send();
+            match res {
+                Ok(res) => {
+                    if res.status().is_success() {
+                        let res = res.json::<Map<String, Value>>().unwrap();
+                        let res = serde_json::to_string_pretty(&res).unwrap();
+                        println!("{}", res);
+                    } else {
+                        handle_unsuccessful_response(res);
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                }
+            }
         }
         "get-most-commented-countries" => {
             let period_start = args[2].clone();
@@ -260,6 +279,15 @@ fn main() {
         }
         _ => {}
     }
+}
+
+fn handle_unsuccessful_response(res: Response) {
+    let status = res.status();
+    let mut text = res.text().unwrap_or("empty".into());
+    if text.trim().is_empty() {
+        text = "empty".into();
+    }
+    eprintln!("HTTP status code: {}, message: {}", status, text);
 }
 
 fn db_path() -> PathBuf {
