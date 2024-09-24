@@ -122,6 +122,31 @@ fn main() {
                 }
             }
         }
+        "generate-element-categories" => {
+            let from_element_id: i64 = args[2].clone().parse().unwrap();
+            let to_element_id: i64 = args[3].clone().parse().unwrap();
+            let args = json!(
+                {"jsonrpc":"2.0","method":"generateelementcategories","params":{"token":token,"from_element_id":from_element_id,"to_element_id":to_element_id},"id":1}
+            );
+            let res = client
+                .post(api_url)
+                .body(serde_json::to_string(&args).unwrap())
+                .send();
+            match res {
+                Ok(res) => {
+                    if res.status().is_success() {
+                        let res = res.json::<Map<String, Value>>().unwrap();
+                        let res = serde_json::to_string_pretty(&res).unwrap();
+                        println!("{}", res);
+                    } else {
+                        handle_unsuccessful_response(res);
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                }
+            }
+        }
         "add-element-comment" => {
             let id = args[2].clone().replace("=", ":");
             let comment = args[3].clone();
