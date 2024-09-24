@@ -74,6 +74,29 @@ fn main() {
                 }
             }
         }
+        "generate-reports" => {
+            let args = json!(
+                {"jsonrpc":"2.0","method":"generatereports","params":{"token":token},"id":1}
+            );
+            let res = client
+                .post(api_url)
+                .body(serde_json::to_string(&args).unwrap())
+                .send();
+            match res {
+                Ok(res) => {
+                    if res.status().is_success() {
+                        let res = res.json::<Map<String, Value>>().unwrap();
+                        let res = serde_json::to_string_pretty(&res).unwrap();
+                        println!("{}", res);
+                    } else {
+                        handle_unsuccessful_response(res);
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                }
+            }
+        }
         "add-element-comment" => {
             let id = args[2].clone().replace("=", ":");
             let comment = args[3].clone();
