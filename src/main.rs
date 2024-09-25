@@ -312,6 +312,29 @@ fn main() {
                 }
             }
         }
+        "sync-elements" => {
+            let args = json!(
+                {"jsonrpc":"2.0","method":"syncelements","params":{"token":token},"id":1}
+            );
+            let res = client
+                .post(api_url)
+                .body(serde_json::to_string(&args).unwrap())
+                .send();
+            match res {
+                Ok(res) => {
+                    if res.status().is_success() {
+                        let res = res.json::<Map<String, Value>>().unwrap();
+                        let res = serde_json::to_string_pretty(&res).unwrap();
+                        println!("{}", res);
+                    } else {
+                        handle_unsuccessful_response(res);
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                }
+            }
+        }
         "get-most-commented-countries" => {
             let period_start = args[2].clone();
             let period_end = args[3].clone();
