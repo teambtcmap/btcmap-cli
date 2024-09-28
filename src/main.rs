@@ -8,16 +8,32 @@ use std::path::PathBuf;
 use std::{env, fs::create_dir};
 
 fn main() {
-    let conn = Connection::open(db_path()).unwrap();
-    init_db(&conn);
-    let token = get_token(&conn);
+    let conn = db_connect();
     let args: Vec<String> = env::args().collect();
+    if args.len() < 2 {
+        eprintln!("You need to specify command, run mapctl help for more details");
+    }
     let command = args[1].as_str();
-    if token.is_empty() && command != "set-token" {
-        println!("You're not autorized. Please run mapctl set-token <token>");
+    if query_settings_string("token", &conn).is_empty() && command != "set-token" {
+        println!("You need to login first, run mapctl set-token <token>");
         return;
     }
     match command {
+        "set-server" => {
+            let mut url = args[2].clone();
+            if url == "prod" {
+                url = "https://api.btcmap.org/rpc".into();
+            }
+            if url == "dev" {
+                url = "http://127.0.0.1:8000/rpc".into();
+            }
+            conn.execute(
+                "UPDATE settings SET json = json_set(json, '$.api_url', ?1);",
+                params![url],
+            )
+            .unwrap();
+            println!("Saved {url} as a server for all future commands");
+        }
         "set-token" => {
             let token = args[2].clone();
             conn.execute(
@@ -25,26 +41,26 @@ fn main() {
                 params![token],
             )
             .unwrap();
-            println!("Saved {token} as a token for all future calls");
+            println!("Saved {token} as a token for all future commands");
         }
         "get-element" => {
             let id = args[2].clone().replace("=", ":");
-            call_remote_procedure("getelement", json!({"token":token,"id":id}));
+            call_remote_procedure("getelement", json!({"id":id}));
         }
         "boost-element" => {
             let id = args[2].clone().replace("=", ":");
             let days: i64 = args[3].parse().unwrap();
-            call_remote_procedure("boostelement", json!({"token":token,"id":id,"days":days}));
+            call_remote_procedure("boostelement", json!({"id":id,"days":days}));
         }
         "generate-reports" => {
-            call_remote_procedure("generatereports", json!({"token":token}));
+            call_remote_procedure("generatereports", json!({}));
         }
         "generate-element-icons" => {
             let from_element_id: i64 = args[2].clone().parse().unwrap();
             let to_element_id: i64 = args[3].clone().parse().unwrap();
             call_remote_procedure(
                 "generateelementicons",
-                json!({"token":token,"from_element_id":from_element_id,"to_element_id":to_element_id}),
+                json!({"from_element_id":from_element_id,"to_element_id":to_element_id}),
             );
         }
         "generate-element-categories" => {
@@ -52,41 +68,35 @@ fn main() {
             let to_element_id: i64 = args[3].clone().parse().unwrap();
             call_remote_procedure(
                 "generateelementcategories",
-                json!({"token":token,"from_element_id":from_element_id,"to_element_id":to_element_id}),
+                json!({"from_element_id":from_element_id,"to_element_id":to_element_id}),
             );
         }
         "add-element-comment" => {
             let id = args[2].clone().replace("=", ":");
             let comment = args[3].clone();
-            call_remote_procedure(
-                "addelementcomment",
-                json!({"token":token,"id":id,"comment":comment}),
-            );
+            call_remote_procedure("addelementcomment", json!({"id":id,"comment":comment}));
         }
         "get-area" => {
             let id = args[2].clone();
-            call_remote_procedure("getarea", json!({"token":token,"id":id}));
+            call_remote_procedure("getarea", json!({"id":id}));
         }
         "set-area-tag" => {
             let id = args[2].clone();
             let name = args[3].clone();
             let value = args[4].clone();
-            call_remote_procedure(
-                "setareatag",
-                json!({"token":token,"id":id,"name":name,"value":value}),
-            );
+            call_remote_procedure("setareatag", json!({"id":id,"name":name,"value":value}));
         }
         "remove-area-tag" => {
             let id = args[2].clone();
             let tag = args[3].clone();
-            call_remote_procedure("removeareatag", json!({"token":token,"id":id,"tag":tag}));
+            call_remote_procedure("removeareatag", json!({"id":id,"tag":tag}));
         }
         "get-trending-countries" => {
             let period_start = args[2].clone();
             let period_end = args[3].clone();
             call_remote_procedure(
                 "gettrendingcountries",
-                json!({"token":token,"period_start":period_start,"period_end":period_end}),
+                json!({"period_start":period_start,"period_end":period_end}),
             );
         }
         "get-trending-communities" => {
@@ -94,21 +104,21 @@ fn main() {
             let period_end = args[3].clone();
             call_remote_procedure(
                 "gettrendingcommunities",
-                json!({"token":token,"period_start":period_start,"period_end":period_end}),
+                json!({"period_start":period_start,"period_end":period_end}),
             );
         }
         "generate-element-issues" => {
-            call_remote_procedure("generateelementissues", json!({"token":token}));
+            call_remote_procedure("generateelementissues", json!({}));
         }
         "sync-elements" => {
-            call_remote_procedure("syncelements", json!({"token":token}));
+            call_remote_procedure("syncelements", json!({}));
         }
         "get-most-commented-countries" => {
             let period_start = args[2].clone();
             let period_end = args[3].clone();
             call_remote_procedure(
                 "getmostcommentedcountries",
-                json!({"token":token,"period_start":period_start,"period_end":period_end}),
+                json!({"period_start":period_start,"period_end":period_end}),
             );
         }
         "generate-areas-elements-mapping" => {
@@ -116,20 +126,27 @@ fn main() {
             let to_element_id: i64 = args[3].clone().parse().unwrap();
             call_remote_procedure(
                 "getmostcommentedcountries",
-                json!({"token":token,"from_element_id":from_element_id,"to_element_id":to_element_id}),
+                json!({"from_element_id":from_element_id,"to_element_id":to_element_id}),
             );
         }
         _ => {}
     }
 }
 
-fn call_remote_procedure(name: &str, params: Value) {
+fn call_remote_procedure(name: &str, mut params: Value) {
+    let params = params.as_object_mut().unwrap();
+    params.insert(
+        "token".into(),
+        Value::String(query_settings_string("token", &db_connect())),
+    );
     let client = ClientBuilder::new().timeout(None).build().unwrap();
     let args = json!(
         {"jsonrpc": "2.0", "method": name, "params": params, "id": 1}
     );
-    let api_url = "https://api.btcmap.org/rpc";
-    //let api_url = "http://127.0.0.1:8000/rpc";
+    let mut api_url = query_settings_string("api_url", &db_connect());
+    if api_url.trim().is_empty() {
+        api_url = "https://api.btcmap.org/rpc".into();
+    }
     let res = client
         .post(api_url)
         .body(serde_json::to_string(&args).unwrap())
@@ -167,7 +184,8 @@ fn db_path() -> PathBuf {
     data_dir.join("mapctl.db")
 }
 
-fn init_db(conn: &Connection) {
+fn db_connect() -> Connection {
+    let conn = Connection::open(db_path()).unwrap();
     conn.execute(
         "CREATE TABLE IF NOT EXISTS settings (json TEXT NOT NULL);",
         (),
@@ -181,11 +199,14 @@ fn init_db(conn: &Connection) {
         conn.execute("INSERT INTO settings (json) VALUES (json('{}'))", ())
             .unwrap();
     }
+    Connection::open(db_path()).unwrap()
 }
 
-fn get_token(conn: &Connection) -> String {
+fn query_settings_string(name: &str, conn: &Connection) -> String {
     let mut stmt = conn
-        .prepare("SELECT json_extract(json, '$.token') FROM settings;")
+        .prepare(&format!(
+            "SELECT json_extract(json, '$.{name}') FROM settings;"
+        ))
         .unwrap();
     let mut rows = stmt.query(()).unwrap();
     match rows.next().unwrap() {
