@@ -4,10 +4,71 @@ use reqwest::blocking::Response;
 use rusqlite::params;
 use rusqlite::Connection;
 use serde_json::{json, Map, Value};
+use std::error::Error;
 use std::path::PathBuf;
 use std::{env, fs::create_dir};
 
-fn main() {
+struct TokenIsNotSetError;
+
+impl std::fmt::Display for TokenIsNotSetError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "An Error Occurred, Please Try Again!") // user-facing output
+    }
+}
+
+impl std::fmt::Debug for TokenIsNotSetError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{{ file: {}, line: {} }}", file!(), line!()) // programmer-facing output
+    }
+}
+
+impl Error for TokenIsNotSetError {
+    fn description(&self) -> &str {
+        "Token is not set"
+    }
+}
+
+struct NoSuchCommandError;
+
+impl std::fmt::Display for NoSuchCommandError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "An Error Occurred, Please Try Again!") // user-facing output
+    }
+}
+
+impl std::fmt::Debug for NoSuchCommandError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{{ file: {}, line: {} }}", file!(), line!()) // programmer-facing output
+    }
+}
+
+impl Error for NoSuchCommandError {
+    fn description(&self) -> &str {
+        "No such command"
+    }
+}
+
+struct UnexpectedStatusCodeError;
+
+impl std::fmt::Display for UnexpectedStatusCodeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "An Error Occurred, Please Try Again!") // user-facing output
+    }
+}
+
+impl std::fmt::Debug for UnexpectedStatusCodeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{{ file: {}, line: {} }}", file!(), line!()) // programmer-facing output
+    }
+}
+
+impl Error for UnexpectedStatusCodeError {
+    fn description(&self) -> &str {
+        "Unexpected status code"
+    }
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
     let conn = db_connect();
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
@@ -16,7 +77,7 @@ fn main() {
     let command = args[1].as_str();
     if query_settings_string("token", &conn).is_empty() && command != "set-token" {
         println!("You need to login first, run btcmap-cli set-token <token>");
-        return;
+        return Err(Box::new(TokenIsNotSetError));
     }
     match command {
         "set-server" => {
@@ -33,6 +94,7 @@ fn main() {
             )
             .unwrap();
             println!("Saved {url} as a server for all future commands");
+            Ok(())
         }
         "set-token" => {
             let token = args[2].clone();
@@ -42,26 +104,25 @@ fn main() {
             )
             .unwrap();
             println!("Saved {token} as a token for all future commands");
+            Ok(())
         }
         "get-element" => {
             let id = args[2].clone().replace("=", ":");
-            call_remote_procedure("getelement", json!({"id":id}));
+            call_remote_procedure("getelement", json!({"id":id}))
         }
         "boost-element" => {
             let id = args[2].clone().replace("=", ":");
             let days: i64 = args[3].parse().unwrap();
-            call_remote_procedure("boostelement", json!({"id":id,"days":days}));
+            call_remote_procedure("boostelement", json!({"id":id,"days":days}))
         }
-        "generate-reports" => {
-            call_remote_procedure("generatereports", json!({}));
-        }
+        "generate-reports" => call_remote_procedure("generatereports", json!({})),
         "generate-element-icons" => {
             let from_element_id: i64 = args[2].clone().parse().unwrap();
             let to_element_id: i64 = args[3].clone().parse().unwrap();
             call_remote_procedure(
                 "generateelementicons",
                 json!({"from_element_id":from_element_id,"to_element_id":to_element_id}),
-            );
+            )
         }
         "generate-element-categories" => {
             let from_element_id: i64 = args[2].clone().parse().unwrap();
@@ -69,27 +130,27 @@ fn main() {
             call_remote_procedure(
                 "generateelementcategories",
                 json!({"from_element_id":from_element_id,"to_element_id":to_element_id}),
-            );
+            )
         }
         "add-element-comment" => {
             let id = args[2].clone().replace("=", ":");
             let comment = args[3].clone();
-            call_remote_procedure("addelementcomment", json!({"id":id,"comment":comment}));
+            call_remote_procedure("addelementcomment", json!({"id":id,"comment":comment}))
         }
         "get-area" => {
             let id = args[2].clone();
-            call_remote_procedure("getarea", json!({"id":id}));
+            call_remote_procedure("getarea", json!({"id":id}))
         }
         "set-area-tag" => {
             let id = args[2].clone();
             let name = args[3].clone();
             let value = args[4].clone();
-            call_remote_procedure("setareatag", json!({"id":id,"name":name,"value":value}));
+            call_remote_procedure("setareatag", json!({"id":id,"name":name,"value":value}))
         }
         "remove-area-tag" => {
             let id = args[2].clone();
             let tag = args[3].clone();
-            call_remote_procedure("removeareatag", json!({"id":id,"tag":tag}));
+            call_remote_procedure("removeareatag", json!({"id":id,"tag":tag}))
         }
         "get-trending-countries" => {
             let period_start = args[2].clone();
@@ -97,7 +158,7 @@ fn main() {
             call_remote_procedure(
                 "gettrendingcountries",
                 json!({"period_start":period_start,"period_end":period_end}),
-            );
+            )
         }
         "get-trending-communities" => {
             let period_start = args[2].clone();
@@ -105,21 +166,17 @@ fn main() {
             call_remote_procedure(
                 "gettrendingcommunities",
                 json!({"period_start":period_start,"period_end":period_end}),
-            );
+            )
         }
-        "generate-element-issues" => {
-            call_remote_procedure("generateelementissues", json!({}));
-        }
-        "sync-elements" => {
-            call_remote_procedure("syncelements", json!({}));
-        }
+        "generate-element-issues" => call_remote_procedure("generateelementissues", json!({})),
+        "sync-elements" => call_remote_procedure("syncelements", json!({})),
         "get-most-commented-countries" => {
             let period_start = args[2].clone();
             let period_end = args[3].clone();
             call_remote_procedure(
                 "getmostcommentedcountries",
                 json!({"period_start":period_start,"period_end":period_end}),
-            );
+            )
         }
         "generate-areas-elements-mapping" => {
             let from_element_id: i64 = args[2].clone().parse().unwrap();
@@ -127,13 +184,13 @@ fn main() {
             call_remote_procedure(
                 "getmostcommentedcountries",
                 json!({"from_element_id":from_element_id,"to_element_id":to_element_id}),
-            );
+            )
         }
-        _ => {}
+        _ => Err(Box::new(NoSuchCommandError)),
     }
 }
 
-fn call_remote_procedure(name: &str, mut params: Value) {
+fn call_remote_procedure(name: &str, mut params: Value) -> Result<(), Box<dyn Error>> {
     let params = params.as_object_mut().unwrap();
     params.insert(
         "token".into(),
@@ -157,13 +214,13 @@ fn call_remote_procedure(name: &str, mut params: Value) {
                 let res = res.json::<Map<String, Value>>().unwrap();
                 let res = serde_json::to_string_pretty(&res).unwrap();
                 println!("{}", res);
+                Ok(())
             } else {
                 handle_unsuccessful_response(res);
+                Err(Box::new(UnexpectedStatusCodeError))
             }
         }
-        Err(e) => {
-            eprintln!("Error: {}", e);
-        }
+        Err(e) => Err(Box::new(e)),
     }
 }
 
