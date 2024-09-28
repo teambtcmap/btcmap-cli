@@ -17,9 +17,6 @@ fn main() {
         println!("You're not autorized. Please run mapctl set-token <token>");
         return;
     }
-    let api_url = "https://api.btcmap.org/rpc";
-    //let api_url = "http://127.0.0.1:8000/rpc";
-    let client = ClientBuilder::new().timeout(None).build().unwrap();
     match command {
         "set-token" => {
             let token = args[2].clone();
@@ -31,349 +28,125 @@ fn main() {
             println!("Saved {token} as a token for all future calls");
         }
         "get-element" => {
-            let id = args[2].clone();
-            let args = json!(
-                {"jsonrpc": "2.0", "method": "getelement", "params": {"token": token, "id": id}, "id": 1}
-            );
-            println!("{args}");
-            let res = client
-                .post(api_url)
-                .body(serde_json::to_string(&args).unwrap())
-                .send()
-                .unwrap()
-                .json::<Map<String, Value>>()
-                .unwrap()
-                .get("result")
-                .unwrap()
-                .clone();
-            let res = serde_json::to_string_pretty(&res).unwrap();
-            println!("{}", res);
+            let id = args[2].clone().replace("=", ":");
+            call_remote_procedure("getelement", json!({"token":token,"id":id}));
         }
         "boost-element" => {
             let id = args[2].clone().replace("=", ":");
             let days: i64 = args[3].parse().unwrap();
-            let args = json!(
-                {"jsonrpc":"2.0","method":"boostelement","params":{"token":token,"id":id,"days":days},"id":1}
-            );
-            let res = client
-                .post(api_url)
-                .body(serde_json::to_string(&args).unwrap())
-                .send();
-            match res {
-                Ok(res) => {
-                    if res.status().is_success() {
-                        let res = res.json::<Map<String, Value>>().unwrap();
-                        let res = serde_json::to_string_pretty(&res).unwrap();
-                        println!("{}", res);
-                    } else {
-                        handle_unsuccessful_response(res);
-                    }
-                }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                }
-            }
+            call_remote_procedure("boostelement", json!({"token":token,"id":id,"days":days}));
         }
         "generate-reports" => {
-            let args = json!(
-                {"jsonrpc":"2.0","method":"generatereports","params":{"token":token},"id":1}
-            );
-            let res = client
-                .post(api_url)
-                .body(serde_json::to_string(&args).unwrap())
-                .send();
-            match res {
-                Ok(res) => {
-                    if res.status().is_success() {
-                        let res = res.json::<Map<String, Value>>().unwrap();
-                        let res = serde_json::to_string_pretty(&res).unwrap();
-                        println!("{}", res);
-                    } else {
-                        handle_unsuccessful_response(res);
-                    }
-                }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                }
-            }
+            call_remote_procedure("generatereports", json!({"token":token}));
         }
         "generate-element-icons" => {
             let from_element_id: i64 = args[2].clone().parse().unwrap();
             let to_element_id: i64 = args[3].clone().parse().unwrap();
-            let args = json!(
-                {"jsonrpc":"2.0","method":"generateelementicons","params":{"token":token,"from_element_id":from_element_id,"to_element_id":to_element_id},"id":1}
+            call_remote_procedure(
+                "generateelementicons",
+                json!({"token":token,"from_element_id":from_element_id,"to_element_id":to_element_id}),
             );
-            let res = client
-                .post(api_url)
-                .body(serde_json::to_string(&args).unwrap())
-                .send();
-            match res {
-                Ok(res) => {
-                    if res.status().is_success() {
-                        let res = res.json::<Map<String, Value>>().unwrap();
-                        let res = serde_json::to_string_pretty(&res).unwrap();
-                        println!("{}", res);
-                    } else {
-                        handle_unsuccessful_response(res);
-                    }
-                }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                }
-            }
         }
         "generate-element-categories" => {
             let from_element_id: i64 = args[2].clone().parse().unwrap();
             let to_element_id: i64 = args[3].clone().parse().unwrap();
-            let args = json!(
-                {"jsonrpc":"2.0","method":"generateelementcategories","params":{"token":token,"from_element_id":from_element_id,"to_element_id":to_element_id},"id":1}
+            call_remote_procedure(
+                "generateelementcategories",
+                json!({"token":token,"from_element_id":from_element_id,"to_element_id":to_element_id}),
             );
-            let res = client
-                .post(api_url)
-                .body(serde_json::to_string(&args).unwrap())
-                .send();
-            match res {
-                Ok(res) => {
-                    if res.status().is_success() {
-                        let res = res.json::<Map<String, Value>>().unwrap();
-                        let res = serde_json::to_string_pretty(&res).unwrap();
-                        println!("{}", res);
-                    } else {
-                        handle_unsuccessful_response(res);
-                    }
-                }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                }
-            }
         }
         "add-element-comment" => {
             let id = args[2].clone().replace("=", ":");
             let comment = args[3].clone();
-            let args = json!(
-                {"jsonrpc":"2.0","method":"addelementcomment","params":{"token":token,"id":id,"comment":comment},"id":1}
+            call_remote_procedure(
+                "addelementcomment",
+                json!({"token":token,"id":id,"comment":comment}),
             );
-            let res = client
-                .post(api_url)
-                .body(serde_json::to_string(&args).unwrap())
-                .send();
-            match res {
-                Ok(res) => {
-                    if res.status().is_success() {
-                        let res = res.json::<Map<String, Value>>().unwrap();
-                        let res = serde_json::to_string_pretty(&res).unwrap();
-                        println!("{}", res);
-                    } else {
-                        handle_unsuccessful_response(res);
-                    }
-                }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                }
-            }
         }
         "get-area" => {
             let id = args[2].clone();
-            let args = json!(
-                {"jsonrpc": "2.0", "method": "getarea", "params": {"token": token, "id": id}, "id": 1}
-            );
-            println!("{args}");
-            let mut res = client
-                .post(api_url)
-                .body(serde_json::to_string(&args).unwrap())
-                .send()
-                .unwrap()
-                .json::<Map<String, Value>>()
-                .unwrap()
-                .get("result")
-                .unwrap()
-                .clone();
-            res.get_mut("tags")
-                .unwrap()
-                .as_object_mut()
-                .unwrap()
-                .remove("geo_json");
-            let res = serde_json::to_string_pretty(&res).unwrap();
-            println!("{}", res);
+            call_remote_procedure("getarea", json!({"token":token,"id":id}));
         }
         "set-area-tag" => {
             let id = args[2].clone();
             let name = args[3].clone();
             let value = args[4].clone();
-            println!("{}", value);
-            let value: Value = serde_json::from_str(&value).unwrap();
-            let args = json!(
-                {"jsonrpc": "2.0", "method": "setareatag", "params": {"token": token, "id": id, "name": name, "value": value}, "id": 1}
+            call_remote_procedure(
+                "setareatag",
+                json!({"token":token,"id":id,"name":name,"value":value}),
             );
-            println!("{args}");
-            let mut res = client
-                .post(api_url)
-                .body(serde_json::to_string(&args).unwrap())
-                .send()
-                .unwrap()
-                .json::<Map<String, Value>>()
-                .unwrap()
-                .get("result")
-                .unwrap()
-                .clone();
-            res.get_mut("tags")
-                .unwrap()
-                .as_object_mut()
-                .unwrap()
-                .remove("geo_json");
-            let res = serde_json::to_string_pretty(&res).unwrap();
-            println!("{}", res);
         }
         "remove-area-tag" => {
             let id = args[2].clone();
             let tag = args[3].clone();
-            let args = json!(
-                {"jsonrpc": "2.0", "method": "removeareatag", "params": {"token": token, "id": id, "tag": tag}, "id": 1}
-            );
-            println!("{args}");
-            let mut res = client
-                .post(api_url)
-                .body(serde_json::to_string(&args).unwrap())
-                .send()
-                .unwrap()
-                .json::<Map<String, Value>>()
-                .unwrap()
-                .get("result")
-                .unwrap()
-                .clone();
-            res.get_mut("tags")
-                .unwrap()
-                .as_object_mut()
-                .unwrap()
-                .remove("geo_json");
-            let res = serde_json::to_string_pretty(&res).unwrap();
-            println!("{}", res);
+            call_remote_procedure("removeareatag", json!({"token":token,"id":id,"tag":tag}));
         }
         "get-trending-countries" => {
             let period_start = args[2].clone();
             let period_end = args[3].clone();
-            let args = json!(
-                {"jsonrpc":"2.0","method":"gettrendingcountries","params":{"token":token,"period_start":period_start,"period_end":period_end},"id":1}
+            call_remote_procedure(
+                "gettrendingcountries",
+                json!({"token":token,"period_start":period_start,"period_end":period_end}),
             );
-            println!("{args}");
-            let res = client
-                .post(api_url)
-                .body(serde_json::to_string(&args).unwrap())
-                .send()
-                .unwrap()
-                .json::<Map<String, Value>>()
-                .unwrap()
-                .get("result")
-                .unwrap()
-                .clone();
-            let res = serde_json::to_string_pretty(&res).unwrap();
-            println!("{}", res);
         }
         "get-trending-communities" => {
             let period_start = args[2].clone();
             let period_end = args[3].clone();
-            let args = json!(
-                {"jsonrpc":"2.0","method":"gettrendingcommunities","params":{"token":token,"period_start":period_start,"period_end":period_end},"id":1}
+            call_remote_procedure(
+                "gettrendingcommunities",
+                json!({"token":token,"period_start":period_start,"period_end":period_end}),
             );
-            println!("{args}");
-            let res = client
-                .post(api_url)
-                .body(serde_json::to_string(&args).unwrap())
-                .send()
-                .unwrap()
-                .json::<Map<String, Value>>()
-                .unwrap()
-                .get("result")
-                .unwrap()
-                .clone();
-            let res = serde_json::to_string_pretty(&res).unwrap();
-            println!("{}", res);
         }
         "generate-element-issues" => {
-            let args = json!(
-                {"jsonrpc":"2.0","method":"generateelementissues","params":{"token":token},"id":1}
-            );
-            let res = client
-                .post(api_url)
-                .body(serde_json::to_string(&args).unwrap())
-                .send();
-            match res {
-                Ok(res) => {
-                    if res.status().is_success() {
-                        let res = res.json::<Map<String, Value>>().unwrap();
-                        let res = serde_json::to_string_pretty(&res).unwrap();
-                        println!("{}", res);
-                    } else {
-                        handle_unsuccessful_response(res);
-                    }
-                }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                }
-            }
+            call_remote_procedure("generateelementissues", json!({"token":token}));
         }
         "sync-elements" => {
-            let args = json!(
-                {"jsonrpc":"2.0","method":"syncelements","params":{"token":token},"id":1}
-            );
-            let res = client
-                .post(api_url)
-                .body(serde_json::to_string(&args).unwrap())
-                .send();
-            match res {
-                Ok(res) => {
-                    if res.status().is_success() {
-                        let res = res.json::<Map<String, Value>>().unwrap();
-                        let res = serde_json::to_string_pretty(&res).unwrap();
-                        println!("{}", res);
-                    } else {
-                        handle_unsuccessful_response(res);
-                    }
-                }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                }
-            }
+            call_remote_procedure("syncelements", json!({"token":token}));
         }
         "get-most-commented-countries" => {
             let period_start = args[2].clone();
             let period_end = args[3].clone();
-            let args = json!(
-                {"jsonrpc":"2.0","method":"getmostcommentedcountries","params":{"token":token,"period_start":period_start,"period_end":period_end},"id":1}
+            call_remote_procedure(
+                "getmostcommentedcountries",
+                json!({"token":token,"period_start":period_start,"period_end":period_end}),
             );
-            let res = client
-                .post(api_url)
-                .body(serde_json::to_string(&args).unwrap())
-                .send()
-                .unwrap()
-                .json::<Map<String, Value>>()
-                .unwrap()
-                .get("result")
-                .unwrap()
-                .clone();
-            let res = serde_json::to_string_pretty(&res).unwrap();
-            println!("{}", res);
         }
         "generate-areas-elements-mapping" => {
             let from_element_id: i64 = args[2].clone().parse().unwrap();
             let to_element_id: i64 = args[3].clone().parse().unwrap();
-            let args = json!(
-                {"jsonrpc":"2.0","method":"generateareaselementsmapping","params":{"token":token,"from_element_id":from_element_id,"to_element_id":to_element_id},"id":1}
+            call_remote_procedure(
+                "getmostcommentedcountries",
+                json!({"token":token,"from_element_id":from_element_id,"to_element_id":to_element_id}),
             );
-            let res = client
-                .post(api_url)
-                .body(serde_json::to_string(&args).unwrap())
-                .send()
-                .unwrap()
-                .json::<Map<String, Value>>()
-                .unwrap()
-                .get("result")
-                .unwrap()
-                .clone();
-            let res = serde_json::to_string_pretty(&res).unwrap();
-            println!("{}", res);
         }
         _ => {}
+    }
+}
+
+fn call_remote_procedure(name: &str, params: Value) {
+    let client = ClientBuilder::new().timeout(None).build().unwrap();
+    let args = json!(
+        {"jsonrpc": "2.0", "method": name, "params": params, "id": 1}
+    );
+    let api_url = "https://api.btcmap.org/rpc";
+    //let api_url = "http://127.0.0.1:8000/rpc";
+    let res = client
+        .post(api_url)
+        .body(serde_json::to_string(&args).unwrap())
+        .send();
+    match res {
+        Ok(res) => {
+            if res.status().is_success() {
+                let res = res.json::<Map<String, Value>>().unwrap();
+                let res = serde_json::to_string_pretty(&res).unwrap();
+                println!("{}", res);
+            } else {
+                handle_unsuccessful_response(res);
+            }
+        }
+        Err(e) => {
+            eprintln!("Error: {}", e);
+        }
     }
 }
 
