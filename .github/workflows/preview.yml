@@ -36,4 +36,4 @@ jobs:
         tag_name: 'preview'
         prerelease: true
         name: 'preview'
-        files: 'target/x86_64-unknown-linux-musl/release/mapctl'
+        files: 'target/x86_64-unknown-linux-musl/release/btcmap-cli'
