@@ -11,11 +11,11 @@ fn main() {
     let conn = db_connect();
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        eprintln!("You need to specify command, run mapctl help for more details");
+        eprintln!("You need to specify command, run btcmap-cli help for more details");
     }
     let command = args[1].as_str();
     if query_settings_string("token", &conn).is_empty() && command != "set-token" {
-        println!("You need to login first, run mapctl set-token <token>");
+        println!("You need to login first, run btcmap-cli set-token <token>");
         return;
     }
     match command {
@@ -177,11 +177,11 @@ fn handle_unsuccessful_response(res: Response) {
 }
 
 fn db_path() -> PathBuf {
-    let data_dir = data_dir().unwrap().join("mapctl");
+    let data_dir = data_dir().unwrap().join("btcmap-cli");
     if !data_dir.exists() {
         create_dir(&data_dir).unwrap();
     }
-    data_dir.join("mapctl.db")
+    data_dir.join("btcmap-cli.db")
 }
 
 fn db_connect() -> Connection {
