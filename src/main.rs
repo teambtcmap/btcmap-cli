@@ -11,11 +11,15 @@ fn main() {
         std::process::exit(1);
     }
     let command = args[1].as_str();
-    if db::query_settings_string("token", &conn).is_empty() && command != "set-token" {
+    if db::query_settings_string("token", &conn).is_empty()
+        && command != "set-token"
+        && command != "help"
+    {
         eprintln!("You need to login first, run btcmap-cli set-token <token>");
         std::process::exit(1);
     }
     match command {
+        "help" => help(),
         "set-server" => {
             let mut url = args[2].clone();
             if url == "prod" {
@@ -116,4 +120,27 @@ fn main() {
             eprintln!("Command does not exist, check btcmap-cli help to see all available commands")
         }
     }
+}
+
+fn help() {
+    println!("add-admin <name:string> <password:string>");
+    println!("add-area <tags:json>");
+    println!("add-element-comment <element_id:string> <comment:string>");
+    println!("boost-element <id:string> <days:integer>");
+    println!("generate-areas-elements-mapping <from_element_id:integer> <to_element_id:integer>");
+    println!("generate-element-categories <from_element_id:integer> <to_element_id:integer>");
+    println!("generate-element-icons <from_element_id:integer> <to_element_id:integer>");
+    println!("generate-element-issues");
+    println!("generate-reports");
+    println!("get-area <id:string>");
+    println!("get-element <id:string>");
+    println!("get-most-commented-countries <period_start:date> <period_end:date>");
+    println!("get-trending-communities <period_start:date> <period_end:date>");
+    println!("get-trending-countries <period_start:date> <period_end:date>");
+    println!("remove-area <id:string>");
+    println!("remove-area-tag <area_id:string> <tag:string>");
+    println!("remove-element-tag <element_id:string> <tag:string>");
+    println!("set-area-tag <area_id:string> <tag_name:string> <tag_value:string>");
+    println!("set-element-tag <element_id:string> <tag_name:string> <tag_value:string>");
+    println!("sync-elements");
 }
