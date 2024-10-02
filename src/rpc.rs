@@ -6,7 +6,7 @@ use serde_json::{json, Map, Value};
 pub fn call_remote_procedure(name: &str, mut params: Value) {
     let params = params.as_object_mut().unwrap();
     params.insert(
-        "token".into(),
+        "password".into(),
         Value::String(db::query_settings_string("token", &db::connect())),
     );
     let client = ClientBuilder::new().timeout(None).build().unwrap();
