@@ -7,7 +7,7 @@ pub fn call_remote_procedure(name: &str, mut params: Value) {
     let params = params.as_object_mut().unwrap();
     params.insert(
         "password".into(),
-        Value::String(db::query_settings_string("token", &db::connect())),
+        Value::String(db::query_settings_string("password", &db::connect())),
     );
     let client = ClientBuilder::new().timeout(None).build().unwrap();
     let args = json!(

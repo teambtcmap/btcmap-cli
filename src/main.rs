@@ -3,22 +3,23 @@ use std::env;
 mod db;
 mod rpc;
 
+const UNAUTHORIZED_ACTIONS: [&str; 2] = ["login", "help"];
+
 fn main() {
-    let conn = db::connect();
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        eprintln!("You need to specify command, run btcmap-cli help for more details");
+        eprintln!(
+            "You need to provide an action, run btcmap-cli help to see all supported actions"
+        );
         std::process::exit(1);
     }
-    let command = args[1].as_str();
-    if db::query_settings_string("token", &conn).is_empty()
-        && command != "set-token"
-        && command != "help"
-    {
-        eprintln!("You need to login first, run btcmap-cli set-token <token>");
+    let action = args[1].as_str();
+    let password = db::query_settings_string("password", &db::connect());
+    if password.is_empty() && !UNAUTHORIZED_ACTIONS.contains(&action) {
+        eprintln!("You need to login first, run btcmap-cli login <password>");
         std::process::exit(1);
     }
-    match command {
+    match action {
         "help" => help(),
         "set-server" => {
             let mut url = args[2].clone();
@@ -28,13 +29,13 @@ fn main() {
             if url == "dev" {
                 url = "http://127.0.0.1:8000/rpc".into();
             }
-            db::insert_settings_string("api_url", &url, &conn);
-            println!("Saved {url} as a server for all future commands");
+            db::insert_settings_string("api_url", &url, &db::connect());
+            println!("Saved {url} as a server for all future actions");
         }
-        "set-token" => {
+        "login" => {
             let token = args[2].clone();
-            db::insert_settings_string("token", &token, &conn);
-            println!("Saved {token} as a token for all future commands");
+            db::insert_settings_string("password", &token, &db::connect());
+            println!("Saved {token} as a password for all future actions");
         }
         "get-element" => {
             let id = args[2].clone().replace("=", ":");
@@ -117,7 +118,7 @@ fn main() {
             );
         }
         _ => {
-            eprintln!("Command does not exist, check btcmap-cli help to see all available commands")
+            eprintln!("Action {action} does not exist, check btcmap-cli help to see all available actions")
         }
     }
 }
