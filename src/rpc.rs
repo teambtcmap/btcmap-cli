@@ -1,4 +1,5 @@
 use crate::db;
+use colored_json::ToColoredJson;
 use reqwest::blocking::ClientBuilder;
 use reqwest::blocking::Response;
 use serde_json::{json, Map, Value};
@@ -26,7 +27,7 @@ pub fn call_remote_procedure(name: &str, mut params: Value) {
             if res.status().is_success() {
                 let res = res.json::<Map<String, Value>>().unwrap();
                 let res = serde_json::to_string_pretty(&res).unwrap();
-                println!("{}", res);
+                println!("{}", res.to_colored_json_auto().unwrap());
             } else {
                 handle_unsuccessful_response(res);
             }

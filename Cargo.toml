@@ -16,3 +16,6 @@ dirs = { version = "5.0.1", default-features = false }
 
 # https://docs.rs/crate/rusqlite
 rusqlite = { version = "0.32.1", default-features = false, features = ["bundled"] }
+
+# https://docs.rs/crate/colored_json
+colored_json = { version = "5.0.0", default-features = false }
