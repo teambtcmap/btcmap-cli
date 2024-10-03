@@ -9,14 +9,14 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
         eprintln!(
-            "You need to provide an action, run btcmap-cli help to see all supported actions"
+            "you need to provide an action, run btcmap-cli help to see all supported actions"
         );
         std::process::exit(1);
     }
     let action = args[1].as_str();
     let password = db::query_settings_string("password", &db::connect());
     if password.is_empty() && !UNAUTHORIZED_ACTIONS.contains(&action) {
-        eprintln!("You need to login first, run btcmap-cli login <password>");
+        eprintln!("you need to login first, run btcmap-cli login <password>");
         std::process::exit(1);
     }
     match action {
@@ -30,12 +30,12 @@ fn main() {
                 url = "http://127.0.0.1:8000/rpc".into();
             }
             db::insert_settings_string("api_url", &url, &db::connect());
-            println!("Saved {url} as a server for all future actions");
+            println!("saved {url} as a server for all future actions");
         }
         "login" => {
             let token = args[2].clone();
             db::insert_settings_string("password", &token, &db::connect());
-            println!("Saved {token} as a password for all future actions");
+            println!("saved {token} as a password for all future actions");
         }
         "get-element" => {
             let id = args[2].clone().replace("=", ":");
@@ -118,7 +118,7 @@ fn main() {
             );
         }
         _ => {
-            eprintln!("Action {action} does not exist, check btcmap-cli help to see all available actions")
+            eprintln!("action {action} does not exist, check btcmap-cli help to see all available actions")
         }
     }
 }
