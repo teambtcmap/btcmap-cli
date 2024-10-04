@@ -36,8 +36,14 @@ pub fn call_remote_procedure(name: &str, mut params: Value) {
     match res {
         Ok(res) => {
             if res.status().is_success() {
-                let res = res.json::<Map<String, Value>>().unwrap();
-                let res = serde_json::to_string_pretty(&res).unwrap();
+                let res = res.json::<Map<String, Value>>().unwrap_or_else(|e| {
+                    eprintln!("failed to convert response body to JSON object: {e}");
+                    exit(1);
+                });
+                let res = serde_json::to_string_pretty(&res).unwrap_or_else(|e| {
+                    eprintln!("failed to convert JSON object to string: {e}");
+                    exit(1);
+                });
                 println!(
                     "{}",
                     res.to_colored_json_auto().unwrap_or_else(|e| {
