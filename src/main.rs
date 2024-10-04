@@ -117,6 +117,22 @@ fn main() {
                 json!({"from_element_id":from_element_id,"to_element_id":to_element_id}),
             );
         }
+        "add-allowed-action" => {
+            let admin_name = args[2].clone();
+            let action = args[3].clone();
+            rpc::call_remote_procedure(
+                "addallowedaction",
+                json!({"admin_name":admin_name,"action":action}),
+            );
+        }
+        "remove-allowed-action" => {
+            let admin_name = args[2].clone();
+            let action = args[3].clone();
+            rpc::call_remote_procedure(
+                "removeallowedaction",
+                json!({"admin_name":admin_name,"action":action}),
+            );
+        }
         _ => {
             eprintln!("action {action} does not exist, check btcmap-cli help to see all available actions")
         }
@@ -144,4 +160,6 @@ fn help() {
     println!("set-area-tag <area_id:string> <tag_name:string> <tag_value:string>");
     println!("set-element-tag <element_id:string> <tag_name:string> <tag_value:string>");
     println!("sync-elements");
+    println!("add-allowed-action <admin_name:string> <action:string>");
+    println!("remove-allowed-action <admin_name:string> <action:string>");
 }
