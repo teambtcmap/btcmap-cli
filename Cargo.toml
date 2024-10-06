@@ -18,7 +18,7 @@ serde_json = { version = "1.0.127", default-features = false }
 dirs = { version = "5.0.1", default-features = false }
 
 # https://docs.rs/crate/rusqlite
-rusqlite = { version = "0.32.1", default-features = false, features = ["bundled"] }
+rusqlite = { version = "0.32.1", default-features = false }
 
 # https://docs.rs/crate/colored_json
 colored_json = { version = "5.0.0", default-features = false }

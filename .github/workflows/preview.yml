@@ -18,16 +18,15 @@ jobs:
     - name: Install the latest toolchain
       run: |
         rustup update
-        rustup target add x86_64-unknown-linux-musl
 
     - name: Install musl
       run: sudo apt-get install -y musl-tools
 
     - name: Run tests
-      run: cargo test --release --target=x86_64-unknown-linux-musl --verbose
+      run: cargo test --release --verbose
 
     - name: Build
-      run: cargo build --release --target=x86_64-unknown-linux-musl --verbose
+      run: cargo build --release --verbose
 
     - name: Create preview release
       uses: softprops/action-gh-release@v2
@@ -36,4 +35,4 @@ jobs:
         tag_name: 'preview'
         prerelease: true
         name: 'preview'
-        files: 'target/x86_64-unknown-linux-musl/release/btcmap-cli'
+        files: 'target/release/btcmap-cli'
