@@ -1,7 +1,7 @@
+use crate::Result;
 use dirs::data_dir;
 use rusqlite::{params, Connection};
 use std::{fs::create_dir, path::PathBuf};
-use crate::Result;
 
 pub fn connect() -> Result<Connection> {
     let conn = Connection::open(path()?).map_err(|e| {
@@ -17,10 +17,10 @@ pub fn insert_settings_string(name: &str, value: &str, conn: &Connection) -> Res
         &format!("UPDATE settings SET json = json_set(json, '$.{name}', ?1);"),
         params![value],
     )
-        .map_err(|e| {
-            eprintln!("failed to set {name} to {value}: {e}");
-            e
-        })?;
+    .map_err(|e| {
+        eprintln!("failed to set {name} to {value}: {e}");
+        e
+    })?;
     Ok(())
 }
 
@@ -37,13 +37,15 @@ pub fn query_settings_string(name: &str, conn: &Connection) -> Result<String> {
         eprintln!("failed to query {name} from settings");
         e
     })?;
-    Ok(match rows.next().map_err(|e| {
-        eprintln!("failed to query {name} from settings");
-        e
-    })? {
-        Some(first_row) => first_row.get(0).unwrap_or("".into()),
-        None => "".into(),
-    })
+    Ok(
+        match rows.next().map_err(|e| {
+            eprintln!("failed to query {name} from settings");
+            e
+        })? {
+            Some(first_row) => first_row.get(0).unwrap_or("".into()),
+            None => "".into(),
+        },
+    )
 }
 
 fn path() -> Result<PathBuf> {
@@ -63,10 +65,10 @@ fn init(conn: &Connection) -> Result<()> {
         "CREATE TABLE IF NOT EXISTS settings (json TEXT NOT NULL);",
         (),
     )
-        .map_err(|e| {
-            eprintln!("failed to create settings table: {e}");
-            e
-        })?;
+    .map_err(|e| {
+        eprintln!("failed to create settings table: {e}");
+        e
+    })?;
     let mut stmt = conn
         .prepare("SELECT COUNT (*) FROM settings;")
         .map_err(|e| {

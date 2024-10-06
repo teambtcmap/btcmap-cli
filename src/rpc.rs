@@ -1,24 +1,22 @@
 use crate::db;
+use crate::Result;
 use colored_json::ToColoredJson;
 use reqwest::blocking::ClientBuilder;
 use reqwest::blocking::Response;
 use serde_json::{json, Map, Value};
-use crate::Result;
 
 pub fn call_remote_procedure(name: &str, mut params: Value) -> Result<()> {
-    let params = params.as_object_mut()
+    let params = params
+        .as_object_mut()
         .ok_or("params value is not a valid JSON object")?;
     params.insert(
         "password".into(),
         db::query_settings_string("password", &db::connect()?)?.into(),
     );
-    let http_client = ClientBuilder::new()
-        .timeout(None)
-        .build()
-        .map_err(|e| {
-            eprintln!("failed to initialize HTTP client: {e}");
-            e
-        })?;
+    let http_client = ClientBuilder::new().timeout(None).build().map_err(|e| {
+        eprintln!("failed to initialize HTTP client: {e}");
+        e
+    })?;
     let args = json!(
         {"jsonrpc": "2.0", "method": name, "params": params, "id": 1}
     );

@@ -12,9 +12,7 @@ type Result<T> = std::result::Result<T, Box<dyn Error>>;
 fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        Err(
-            "you need to provide an action, run btcmap-cli help to see all supported actions"
-        )?;
+        Err("you need to provide an action, run btcmap-cli help to see all supported actions")?;
     }
     let action = args[1].as_str();
     let password = db::query_settings_string("password", &db::connect()?)?;
@@ -101,7 +99,9 @@ fn main() -> Result<()> {
                 json!({"period_start":period_start,"period_end":period_end}),
             )?;
         }
-        "generate-element-issues" => rpc::call_remote_procedure("generateelementissues", json!({}))?,
+        "generate-element-issues" => {
+            rpc::call_remote_procedure("generateelementissues", json!({}))?
+        }
         "sync-elements" => rpc::call_remote_procedure("syncelements", json!({}))?,
         "get-most-commented-countries" => {
             let period_start = args[2].clone();
