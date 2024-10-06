@@ -55,7 +55,10 @@ pub fn call_remote_procedure(name: &str, mut params: Value) {
                 handle_unsuccessful_response(res);
             }
         }
-        Err(_) => {}
+        Err(e) => {
+            eprintln!("request failed: {e}");
+            exit(1);
+        }
     }
 }
 
