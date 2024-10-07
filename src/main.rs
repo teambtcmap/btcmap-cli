@@ -1,5 +1,6 @@
 use serde_json::json;
 use std::env;
+use std::env::Args;
 use std::error::Error;
 
 mod db;
@@ -9,12 +10,19 @@ const UNAUTHORIZED_ACTIONS: [&str; 2] = ["login", "help"];
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
+fn get_arg(args: &mut Args) -> Result<String> {
+    Ok(args
+        .next()
+        .ok_or("You need to provide one more command line argument")?)
+}
+
 fn main() -> Result<()> {
-    let args: Vec<String> = env::args().collect();
-    if args.len() < 2 {
-        Err("you need to provide an action, run btcmap-cli help to see all supported actions")?;
-    }
-    let action = args[1].as_str();
+    let mut args = env::args();
+    drop(args.next());
+    let action = args
+        .next()
+        .ok_or("you need to provide an action, run btcmap-cli help to see all supported actions")?;
+    let action = action.as_str();
     let password = db::query_settings_string("password", &db::connect()?)?;
     if password.is_empty() && !UNAUTHORIZED_ACTIONS.contains(&action) {
         Err("you need to login first, run btcmap-cli login <password>")?;
@@ -22,78 +30,78 @@ fn main() -> Result<()> {
     match action {
         "help" => help(),
         "set-server" => {
-            let mut url = args[2].clone();
-            if url == "prod" {
-                url = "https://api.btcmap.org/rpc".into();
-            }
-            if url == "dev" {
-                url = "http://127.0.0.1:8000/rpc".into();
-            }
+            let url = get_arg(&mut args)?;
+            let url = url.as_str();
+            let url = match url {
+                "prod" => "https://api.btcmap.org/rpc",
+                "dev" => "http://127.0.0.1:8000/rpc",
+                _ => url,
+            };
             db::insert_settings_string("api_url", &url, &db::connect()?)?;
             println!("saved {url} as a server for all future actions");
         }
         "login" => {
-            let token = args[2].clone();
+            let token = get_arg(&mut args)?;
             db::insert_settings_string("password", &token, &db::connect()?)?;
             println!("saved {token} as a password for all future actions");
         }
         "get-element" => {
-            let id = args[2].clone().replace("=", ":");
+            let id = get_arg(&mut args)?.replace("=", ":");
             rpc::call_remote_procedure("getelement", json!({"id":id}))?;
         }
         "boost-element" => {
-            let id = args[2].clone().replace("=", ":");
-            let days: i64 = args[3].parse().unwrap();
+            let id = get_arg(&mut args)?.replace("=", ":");
+            let days = get_arg(&mut args)?.parse::<i64>()?;
             rpc::call_remote_procedure("boostelement", json!({"id":id,"days":days}))?;
         }
         "generate-reports" => rpc::call_remote_procedure("generatereports", json!({}))?,
         "generate-element-icons" => {
-            let from_element_id: i64 = args[2].clone().parse().unwrap();
-            let to_element_id: i64 = args[3].clone().parse().unwrap();
+            let from_element_id = get_arg(&mut args)?.parse::<i64>()?;
+            let to_element_id = get_arg(&mut args)?.parse::<i64>()?;
             rpc::call_remote_procedure(
                 "generateelementicons",
                 json!({"from_element_id":from_element_id,"to_element_id":to_element_id}),
             )?;
         }
         "generate-element-categories" => {
-            let from_element_id: i64 = args[2].clone().parse().unwrap();
-            let to_element_id: i64 = args[3].clone().parse().unwrap();
+            let from_element_id = get_arg(&mut args)?.parse::<i64>()?;
+            let to_element_id = get_arg(&mut args)?.parse::<i64>()?;
             rpc::call_remote_procedure(
                 "generateelementcategories",
                 json!({"from_element_id":from_element_id,"to_element_id":to_element_id}),
             )?;
         }
         "add-element-comment" => {
-            let id = args[2].clone().replace("=", ":");
-            let comment = args[3].clone();
+            let id = get_arg(&mut args)?.replace("=", ":");
+            let comment = get_arg(&mut args)?;
             rpc::call_remote_procedure("addelementcomment", json!({"id":id,"comment":comment}))?;
         }
         "get-area" => {
-            let id = args[2].clone();
+            let id = get_arg(&mut args)?;
             rpc::call_remote_procedure("getarea", json!({"id":id}))?;
         }
         "set-area-tag" => {
-            let id = args[2].clone();
-            let name = args[3].clone();
-            let value = args[4].clone();
+            let id = get_arg(&mut args)?;
+            let name = get_arg(&mut args)?;
+            let value = get_arg(&mut args)?;
             rpc::call_remote_procedure("setareatag", json!({"id":id,"name":name,"value":value}))?;
         }
         "remove-area-tag" => {
-            let id = args[2].clone();
-            let tag = args[3].clone();
+            let id = get_arg(&mut args)?;
+            let tag = get_arg(&mut args)?;
             rpc::call_remote_procedure("removeareatag", json!({"id":id,"tag":tag}))?;
         }
         "get-trending-countries" => {
-            let period_start = args[2].clone();
-            let period_end = args[3].clone();
+            let period_start = get_arg(&mut args)?;
+            let period_end = get_arg(&mut args)?;
             rpc::call_remote_procedure(
                 "gettrendingcountries",
                 json!({"period_start":period_start,"period_end":period_end}),
             )?;
         }
         "get-trending-communities" => {
-            let period_start = args[2].clone();
-            let period_end = args[3].clone();
+            let period_start = get_arg(&mut args)?;
+            let period_end = get_arg(&mut args)?;
             rpc::call_remote_procedure(
                 "gettrendingcommunities",
                 json!({"period_start":period_start,"period_end":period_end}),
@@ -104,32 +112,32 @@ fn main() -> Result<()> {
         }
         "sync-elements" => rpc::call_remote_procedure("syncelements", json!({}))?,
         "get-most-commented-countries" => {
-            let period_start = args[2].clone();
-            let period_end = args[3].clone();
+            let period_start = get_arg(&mut args)?;
+            let period_end = get_arg(&mut args)?;
             rpc::call_remote_procedure(
                 "getmostcommentedcountries",
                 json!({"period_start":period_start,"period_end":period_end}),
             )?;
         }
         "generate-areas-elements-mapping" => {
-            let from_element_id: i64 = args[2].clone().parse().unwrap();
-            let to_element_id: i64 = args[3].clone().parse().unwrap();
+            let from_element_id = get_arg(&mut args)?.parse::<i64>()?;
+            let to_element_id = get_arg(&mut args)?.parse::<i64>()?;
             rpc::call_remote_procedure(
                 "getmostcommentedcountries",
                 json!({"from_element_id":from_element_id,"to_element_id":to_element_id}),
             )?;
         }
         "add-allowed-action" => {
-            let admin_name = args[2].clone();
-            let action = args[3].clone();
+            let admin_name = get_arg(&mut args)?;
+            let action = get_arg(&mut args)?;
             rpc::call_remote_procedure(
                 "addallowedaction",
                 json!({"admin_name":admin_name,"action":action}),
             )?;
         }
         "remove-allowed-action" => {
-            let admin_name = args[2].clone();
-            let action = args[3].clone();
+            let admin_name = get_arg(&mut args)?;
+            let action = get_arg(&mut args)?;
             rpc::call_remote_procedure(
                 "removeallowedaction",
                 json!({"admin_name":admin_name,"action":action}),
