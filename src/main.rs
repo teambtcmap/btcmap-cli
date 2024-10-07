@@ -143,6 +143,13 @@ fn main() -> Result<()> {
                 json!({"admin_name":admin_name,"action":action}),
             )?;
         }
+        "get-user-activity" => {
+            let id = get_arg(&mut args)?;
+            let limit = get_arg(&mut args)
+                .unwrap_or(100000.to_string())
+                .parse::<i64>()?;
+            rpc::call_remote_procedure("getuseractivity", json!({"id":id,"limit":limit}))?;
+        }
         _ => {
             eprintln!("action {action} does not exist, check btcmap-cli help to see all available actions")
         }
@@ -173,4 +180,5 @@ fn help() {
     println!("sync-elements");
     println!("add-allowed-action <admin_name:string> <action:string>");
     println!("remove-allowed-action <admin_name:string> <action:string>");
+    println!("get-user-activity <id:string> [limit:int]");
 }
