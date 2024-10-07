@@ -4,10 +4,7 @@ use rusqlite::{params, Connection};
 use std::{fs::create_dir, path::PathBuf};
 
 pub fn connect() -> Result<Connection> {
-    let conn = Connection::open(path()?).map_err(|e| {
-        eprintln!("failed to connect to database: {e}");
-        e
-    })?;
+    let conn = Connection::open(path()?)?;
     init(&conn)?;
     Ok(conn)
 }
