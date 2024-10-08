@@ -154,6 +154,15 @@ fn main() -> Result<()> {
             let query = get_arg(&mut args)?;
             rpc::call_remote_procedure("search", json!({"query":query}))?;
         }
+        "set-area-icon" => {
+            let id = get_arg(&mut args)?;
+            let icon_base64 = get_arg(&mut args)?;
+            let icon_ext = get_arg(&mut args)?;
+            rpc::call_remote_procedure(
+                "setareaicon",
+                json!({"id":id,"icon_base64":icon_base64,"icon_ext":icon_ext}),
+            )?;
+        }
         _ => {
             eprintln!("action {action} does not exist, check btcmap-cli help to see all available actions")
         }
@@ -186,4 +195,5 @@ fn help() {
     println!("remove-allowed-action <admin_name:string> <action:string>");
     println!("get-user-activity <id:string> [limit:int]");
     println!("search <query:string>");
+    println!("set-area-icon <id:string> <icon_base64:string> <icon_ext:string>");
 }
