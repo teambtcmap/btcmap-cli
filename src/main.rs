@@ -150,6 +150,10 @@ fn main() -> Result<()> {
                 .parse::<i64>()?;
             rpc::call_remote_procedure("getuseractivity", json!({"id":id,"limit":limit}))?;
         }
+        "search" => {
+            let query = get_arg(&mut args)?;
+            rpc::call_remote_procedure("search", json!({"query":query}))?;
+        }
         _ => {
             eprintln!("action {action} does not exist, check btcmap-cli help to see all available actions")
         }
@@ -181,4 +185,5 @@ fn help() {
     println!("add-allowed-action <admin_name:string> <action:string>");
     println!("remove-allowed-action <admin_name:string> <action:string>");
     println!("get-user-activity <id:string> [limit:int]");
+    println!("search <query:string>");
 }
