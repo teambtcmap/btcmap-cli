@@ -2,9 +2,8 @@ use serde_json::json;
 use std::env;
 use std::env::Args;
 use std::error::Error;
-
-mod db;
 mod rpc;
+mod settings;
 
 const UNAUTHORIZED_ACTIONS: [&str; 2] = ["login", "help"];
 
@@ -23,8 +22,7 @@ fn main() -> Result<()> {
         .next()
         .ok_or("you need to provide an action, run btcmap-cli help to see all supported actions")?;
     let action = action.as_str();
-    let password = db::query_settings_string("password", &db::connect()?)?;
-    if password.is_empty() && !UNAUTHORIZED_ACTIONS.contains(&action) {
+    if settings::get_str("password")?.is_empty() && !UNAUTHORIZED_ACTIONS.contains(&action) {
         Err("you need to login first, run btcmap-cli login <password>")?;
     }
     match action {
@@ -37,12 +35,12 @@ fn main() -> Result<()> {
                 "dev" => "http://127.0.0.1:8000/rpc",
                 _ => url,
             };
-            db::insert_settings_string("api_url", &url, &db::connect()?)?;
+            settings::put_str("api_url", &url)?;
             println!("saved {url} as a server for all future actions");
         }
         "login" => {
             let token = get_arg(&mut args)?;
-            db::insert_settings_string("password", &token, &db::connect()?)?;
+            settings::put_str("password", &token)?;
             println!("saved {token} as a password for all future actions");
         }
         "get-element" => {

@@ -3,21 +3,16 @@ use dirs::data_dir;
 use rusqlite::{params, Connection};
 use std::{fs::create_dir, path::PathBuf};
 
-pub fn connect() -> Result<Connection> {
-    let conn = Connection::open(path()?)?;
-    init(&conn)?;
-    Ok(conn)
-}
-
-pub fn insert_settings_string(name: &str, value: &str, conn: &Connection) -> Result<()> {
-    conn.execute(
+pub fn put_str(name: &str, value: &str) -> Result<()> {
+    connect()?.execute(
         &format!("UPDATE settings SET json = json_set(json, '$.{name}', ?1);"),
         params![value],
     )?;
     Ok(())
 }
 
-pub fn query_settings_string(name: &str, conn: &Connection) -> Result<String> {
+pub fn get_str(name: &str) -> Result<String> {
+    let conn = connect()?;
     let mut stmt = conn.prepare(&format!(
         "SELECT json_extract(json, '$.{name}') FROM settings;"
     ))?;
@@ -27,6 +22,12 @@ pub fn query_settings_string(name: &str, conn: &Connection) -> Result<String> {
         None => "".into(),
     };
     Ok(res)
+}
+
+fn connect() -> Result<Connection> {
+    let conn = Connection::open(path()?)?;
+    init(&conn)?;
+    Ok(conn)
 }
 
 fn path() -> Result<PathBuf> {
