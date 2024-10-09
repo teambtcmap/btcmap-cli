@@ -163,6 +163,7 @@ fn main() -> Result<()> {
                 json!({"id":id,"icon_base64":icon_base64,"icon_ext":icon_ext}),
             )?;
         }
+        "get-boosts" => rpc::call_remote_procedure("getboosts", json!({}))?,
         _ => {
             eprintln!("action {action} does not exist, check btcmap-cli help to see all available actions")
         }
@@ -196,4 +197,5 @@ fn help() {
     println!("get-user-activity <id:string> [limit:int]");
     println!("search <query:string>");
     println!("set-area-icon <id:string> <icon_base64:string> <icon_ext:string>");
+    println!("get-boosts");
 }
