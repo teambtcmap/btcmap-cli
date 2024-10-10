@@ -1,198 +1,116 @@
-use serde_json::json;
-use std::env;
-use std::env::Args;
 use std::error::Error;
 mod rpc;
 mod settings;
+use clap::{Parser, Subcommand};
+use command::{
+    area,
+    element::{
+        self, GenerateElementCategoriesArgs, GenerateElementIconsArgs, GenerateElementIssuesArgs,
+    },
+};
+mod command;
 
-const UNAUTHORIZED_ACTIONS: [&str; 2] = ["login", "help"];
+#[derive(Parser)]
+#[command(version, about, long_about = None)]
+struct Cli {
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    // Setup
+    SetServer(command::setup::SetServerArgs),
+    Login(command::setup::LoginArgs),
+    // Admin
+    AddAdmin(command::admin::AddAdminArgs),
+    AddAllowedAction(command::admin::AddAllowedActionArgs),
+    RemoveAllowedAction(command::admin::RemoveAllowedActionArgs),
+    // Common
+    Search(command::common::SearchArgs),
+    // Element
+    GetElement(command::element::GetElementArgs),
+    SetElementTag(command::element::SetElementTagArgs),
+    RemoveElementTag(command::element::RemoveElementTagArgs),
+    AddElementComment(command::element::AddElementCommentArgs),
+    BoostElement(command::element::BoostElementArgs),
+    GetBoosts(command::element::GetBoostsArgs),
+    SyncElements(command::element::SyncElementsArgs),
+    GenerateElementIcons(GenerateElementIconsArgs),
+    GenerateElementCategories(GenerateElementCategoriesArgs),
+    GenerateElementIssues(GenerateElementIssuesArgs),
+    // Area
+    GetArea(command::area::GetAreaArgs),
+    SetAreaTag(command::area::SetAreaTagArgs),
+    RemoveAreaTag(command::area::RemoveAreaTagArgs),
+    SetAreaIcon(command::area::SetAreaIconArgs),
+    GenerateAreasElementsMapping(command::area::GenerateAreasElementsMappingArgs),
+    // User
+    GetUserActivity(command::user::GetUserActivityArgs),
+    // Report
+    GenerateReports(command::report::GenerateReportsArgs),
+    GetTrendingCountries(command::report::GetTrendingCountriesArgs),
+    GetTrendingCommunities(command::report::GetTrendingCommunitiesArgs),
+    GetMostCommentedCountries(command::report::GetMostCommentedCountriesArgs),
+}
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
-fn get_arg(args: &mut Args) -> Result<String> {
-    Ok(args
-        .next()
-        .ok_or("You need to provide one more command line argument")?)
-}
-
 fn main() -> Result<()> {
-    let mut args = env::args();
-    drop(args.next());
-    let action = args
-        .next()
-        .ok_or("you need to provide an action, run btcmap-cli help to see all supported actions")?;
-    let action = action.replace("-", "_");
-    let action = action.as_str();
-    if settings::get_str("password")?.is_empty() && !UNAUTHORIZED_ACTIONS.contains(&action) {
+    let cli = Cli::parse();
+
+    if let Some(Commands::SetServer(args)) = &cli.command {
+        return command::setup::set_server(args);
+    }
+
+    if let Some(Commands::Login(args)) = &cli.command {
+        return command::setup::login(args);
+    }
+
+    if settings::get_str("password")?.is_empty() {
         Err("you need to login first, run btcmap-cli login <password>")?;
     }
-    match action {
-        "help" => help(),
-        "set_server" => {
-            let url = get_arg(&mut args)?;
-            let url = url.as_str();
-            let url = match url {
-                "prod" => "https://api.btcmap.org/rpc",
-                "dev" => "http://127.0.0.1:8000/rpc",
-                _ => url,
-            };
-            settings::put_str("api_url", &url)?;
-            println!("saved {url} as a server for all future actions");
-        }
-        "login" => {
-            let token = get_arg(&mut args)?;
-            settings::put_str("password", &token)?;
-            println!("saved {token} as a password for all future actions");
-        }
-        "get_element" => {
-            let id = get_arg(&mut args)?.replace("=", ":");
-            rpc::call(action, json!({"id":id}))?;
-        }
-        "boost_element" => {
-            let id = get_arg(&mut args)?.replace("=", ":");
-            let days = get_arg(&mut args)?.parse::<i64>()?;
-            rpc::call(action, json!({"id":id,"days":days}))?;
-        }
-        "generate_reports" => rpc::call(action, json!({}))?,
-        "generate_element_icons" => {
-            let from_element_id = get_arg(&mut args)?.parse::<i64>()?;
-            let to_element_id = get_arg(&mut args)?.parse::<i64>()?;
-            rpc::call(
-                action,
-                json!({"from_element_id":from_element_id,"to_element_id":to_element_id}),
-            )?;
-        }
-        "generate_element_categories" => {
-            let from_element_id = get_arg(&mut args)?.parse::<i64>()?;
-            let to_element_id = get_arg(&mut args)?.parse::<i64>()?;
-            rpc::call(
-                action,
-                json!({"from_element_id":from_element_id,"to_element_id":to_element_id}),
-            )?;
-        }
-        "add_element_comment" => {
-            let id = get_arg(&mut args)?.replace("=", ":");
-            let comment = get_arg(&mut args)?;
-            rpc::call(action, json!({"id":id,"comment":comment}))?;
-        }
-        "get_area" => {
-            let id = get_arg(&mut args)?;
-            rpc::call(action, json!({"id":id}))?;
-        }
-        "set_area_tag" => {
-            let id = get_arg(&mut args)?;
-            let name = get_arg(&mut args)?;
-            let value = get_arg(&mut args)?;
-            rpc::call(action, json!({"id":id,"name":name,"value":value}))?;
-        }
-        "remove_area_tag" => {
-            let id = get_arg(&mut args)?;
-            let tag = get_arg(&mut args)?;
-            rpc::call(action, json!({"id":id,"tag":tag}))?;
-        }
-        "get_trending_countries" => {
-            let period_start = get_arg(&mut args)?;
-            let period_end = get_arg(&mut args)?;
-            rpc::call(
-                action,
-                json!({"period_start":period_start,"period_end":period_end}),
-            )?;
-        }
-        "get_trending_communities" => {
-            let period_start = get_arg(&mut args)?;
-            let period_end = get_arg(&mut args)?;
-            rpc::call(
-                action,
-                json!({"period_start":period_start,"period_end":period_end}),
-            )?;
-        }
-        "generate_element_issues" => rpc::call(action, json!({}))?,
-        "sync_elements" => rpc::call(action, json!({}))?,
-        "get_most_commented_countries" => {
-            let period_start = get_arg(&mut args)?;
-            let period_end = get_arg(&mut args)?;
-            rpc::call(
-                action,
-                json!({"period_start":period_start,"period_end":period_end}),
-            )?;
-        }
-        "generate_areas_elements_mapping" => {
-            let from_element_id = get_arg(&mut args)?.parse::<i64>()?;
-            let to_element_id = get_arg(&mut args)?.parse::<i64>()?;
-            rpc::call(
-                action,
-                json!({"from_element_id":from_element_id,"to_element_id":to_element_id}),
-            )?;
-        }
-        "add_allowed_action" => {
-            let admin_name = get_arg(&mut args)?;
-            let allowed_action = get_arg(&mut args)?;
-            rpc::call(
-                action,
-                json!({"admin_name":admin_name,"action":allowed_action}),
-            )?;
-        }
-        "remove_allowed_action" => {
-            let admin_name = get_arg(&mut args)?;
-            let allowed_action = get_arg(&mut args)?;
-            rpc::call(
-                action,
-                json!({"admin_name":admin_name,"action":allowed_action}),
-            )?;
-        }
-        "get_user_activity" => {
-            let id = get_arg(&mut args)?;
-            let limit = get_arg(&mut args)
-                .unwrap_or(100000.to_string())
-                .parse::<i64>()?;
-            rpc::call(action, json!({"id":id,"limit":limit}))?;
-        }
-        "search" => {
-            let query = get_arg(&mut args)?;
-            rpc::call(action, json!({"query":query}))?;
-        }
-        "set_area_icon" => {
-            let id = get_arg(&mut args)?;
-            let icon_base64 = get_arg(&mut args)?;
-            let icon_ext = get_arg(&mut args)?;
-            rpc::call(
-                action,
-                json!({"id":id,"icon_base64":icon_base64,"icon_ext":icon_ext}),
-            )?;
-        }
-        "get-boosts" => rpc::call(action, json!({}))?,
-        _ => {
-            eprintln!("action {action} does not exist, check btcmap-cli help to see all available actions")
+
+    let command = match &cli.command {
+        Some(command) => command,
+        None => return Ok(()),
+    };
+
+    match command {
+        // Setup
+        Commands::SetServer(_) => Err("supposed to be unreachable".into()),
+        Commands::Login(_) => Err("supposed to be unreachable".into()),
+        // Admin
+        Commands::AddAdmin(args) => command::admin::add_admin(args),
+        Commands::AddAllowedAction(args) => command::admin::add_allowed_action(args),
+        Commands::RemoveAllowedAction(args) => command::admin::remove_allowed_action(args),
+        // Common
+        Commands::Search(args) => command::common::search(args),
+        // Element
+        Commands::GetElement(args) => element::get_element(args),
+        Commands::SetElementTag(args) => element::set_element_tag(args),
+        Commands::RemoveElementTag(args) => element::remove_element_tag(args),
+        Commands::AddElementComment(args) => element::add_element_comment(args),
+        Commands::BoostElement(args) => element::boost_element(args),
+        Commands::GetBoosts(args) => element::get_boosts(args),
+        Commands::SyncElements(args) => element::sync_elements(args),
+        Commands::GenerateElementIcons(args) => element::generate_element_icons(args),
+        Commands::GenerateElementCategories(args) => element::generate_element_categories(args),
+        Commands::GenerateElementIssues(args) => element::generate_element_issues(args),
+        // Area
+        Commands::GetArea(args) => area::get_area(args),
+        Commands::SetAreaTag(args) => area::set_area_tag(args),
+        Commands::RemoveAreaTag(args) => area::remove_area_tag(args),
+        Commands::SetAreaIcon(args) => area::set_area_icon(args),
+        Commands::GenerateAreasElementsMapping(args) => area::generate_areas_elements_mapping(args),
+        // User
+        Commands::GetUserActivity(args) => command::user::get_user_activity(args),
+        // Report
+        Commands::GenerateReports(args) => command::report::generate_reports(args),
+        Commands::GetTrendingCountries(args) => command::report::get_trending_countries(args),
+        Commands::GetTrendingCommunities(args) => command::report::get_trending_communities(args),
+        Commands::GetMostCommentedCountries(args) => {
+            command::report::get_most_commented_countries(args)
         }
     }
-    Ok(())
-}
-
-fn help() {
-    println!("add-admin <name:string> <password:string>");
-    println!("add-area <tags:json>");
-    println!("add-element-comment <element_id:string> <comment:string>");
-    println!("boost-element <id:string> <days:integer>");
-    println!("generate-areas-elements-mapping <from_element_id:integer> <to_element_id:integer>");
-    println!("generate-element-categories <from_element_id:integer> <to_element_id:integer>");
-    println!("generate-element-icons <from_element_id:integer> <to_element_id:integer>");
-    println!("generate-element-issues");
-    println!("generate-reports");
-    println!("get-area <id:string>");
-    println!("get-element <id:string>");
-    println!("get-most-commented-countries <period_start:date> <period_end:date>");
-    println!("get-trending-communities <period_start:date> <period_end:date>");
-    println!("get-trending-countries <period_start:date> <period_end:date>");
-    println!("remove-area <id:string>");
-    println!("remove-area-tag <area_id:string> <tag:string>");
-    println!("remove-element-tag <element_id:string> <tag:string>");
-    println!("set-area-tag <area_id:string> <tag_name:string> <tag_value:string>");
-    println!("set-element-tag <element_id:string> <tag_name:string> <tag_value:string>");
-    println!("sync-elements");
-    println!("add-allowed-action <admin_name:string> <action:string>");
-    println!("remove-allowed-action <admin_name:string> <action:string>");
-    println!("get-user-activity <id:string> [limit:int]");
-    println!("search <query:string>");
-    println!("set-area-icon <id:string> <icon_base64:string> <icon_ext:string>");
-    println!("get-boosts");
 }
