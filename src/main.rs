@@ -21,13 +21,14 @@ fn main() -> Result<()> {
     let action = args
         .next()
         .ok_or("you need to provide an action, run btcmap-cli help to see all supported actions")?;
+    let action = action.replace("-", "_");
     let action = action.as_str();
     if settings::get_str("password")?.is_empty() && !UNAUTHORIZED_ACTIONS.contains(&action) {
         Err("you need to login first, run btcmap-cli login <password>")?;
     }
     match action {
         "help" => help(),
-        "set-server" => {
+        "set_server" => {
             let url = get_arg(&mut args)?;
             let url = url.as_str();
             let url = match url {
@@ -43,125 +44,123 @@ fn main() -> Result<()> {
             settings::put_str("password", &token)?;
             println!("saved {token} as a password for all future actions");
         }
-        "get-element" => {
+        "get_element" => {
             let id = get_arg(&mut args)?.replace("=", ":");
-            rpc::call_remote_procedure("getelement", json!({"id":id}))?;
+            rpc::call(action, json!({"id":id}))?;
         }
-        "boost-element" => {
+        "boost_element" => {
             let id = get_arg(&mut args)?.replace("=", ":");
             let days = get_arg(&mut args)?.parse::<i64>()?;
-            rpc::call_remote_procedure("boostelement", json!({"id":id,"days":days}))?;
+            rpc::call(action, json!({"id":id,"days":days}))?;
         }
-        "generate-reports" => rpc::call_remote_procedure("generatereports", json!({}))?,
-        "generate-element-icons" => {
+        "generate_reports" => rpc::call(action, json!({}))?,
+        "generate_element_icons" => {
             let from_element_id = get_arg(&mut args)?.parse::<i64>()?;
             let to_element_id = get_arg(&mut args)?.parse::<i64>()?;
-            rpc::call_remote_procedure(
-                "generateelementicons",
+            rpc::call(
+                action,
                 json!({"from_element_id":from_element_id,"to_element_id":to_element_id}),
             )?;
         }
-        "generate-element-categories" => {
+        "generate_element_categories" => {
             let from_element_id = get_arg(&mut args)?.parse::<i64>()?;
             let to_element_id = get_arg(&mut args)?.parse::<i64>()?;
-            rpc::call_remote_procedure(
-                "generateelementcategories",
+            rpc::call(
+                action,
                 json!({"from_element_id":from_element_id,"to_element_id":to_element_id}),
             )?;
         }
-        "add-element-comment" => {
+        "add_element_comment" => {
             let id = get_arg(&mut args)?.replace("=", ":");
             let comment = get_arg(&mut args)?;
-            rpc::call_remote_procedure("addelementcomment", json!({"id":id,"comment":comment}))?;
+            rpc::call(action, json!({"id":id,"comment":comment}))?;
         }
-        "get-area" => {
+        "get_area" => {
             let id = get_arg(&mut args)?;
-            rpc::call_remote_procedure("getarea", json!({"id":id}))?;
+            rpc::call(action, json!({"id":id}))?;
         }
-        "set-area-tag" => {
+        "set_area_tag" => {
             let id = get_arg(&mut args)?;
             let name = get_arg(&mut args)?;
             let value = get_arg(&mut args)?;
-            rpc::call_remote_procedure("setareatag", json!({"id":id,"name":name,"value":value}))?;
+            rpc::call(action, json!({"id":id,"name":name,"value":value}))?;
         }
-        "remove-area-tag" => {
+        "remove_area_tag" => {
             let id = get_arg(&mut args)?;
             let tag = get_arg(&mut args)?;
-            rpc::call_remote_procedure("removeareatag", json!({"id":id,"tag":tag}))?;
+            rpc::call(action, json!({"id":id,"tag":tag}))?;
         }
-        "get-trending-countries" => {
+        "get_trending_countries" => {
             let period_start = get_arg(&mut args)?;
             let period_end = get_arg(&mut args)?;
-            rpc::call_remote_procedure(
-                "gettrendingcountries",
+            rpc::call(
+                action,
                 json!({"period_start":period_start,"period_end":period_end}),
             )?;
         }
-        "get-trending-communities" => {
+        "get_trending_communities" => {
             let period_start = get_arg(&mut args)?;
             let period_end = get_arg(&mut args)?;
-            rpc::call_remote_procedure(
-                "gettrendingcommunities",
+            rpc::call(
+                action,
                 json!({"period_start":period_start,"period_end":period_end}),
             )?;
         }
-        "generate-element-issues" => {
-            rpc::call_remote_procedure("generateelementissues", json!({}))?
-        }
-        "sync-elements" => rpc::call_remote_procedure("syncelements", json!({}))?,
-        "get-most-commented-countries" => {
+        "generate_element_issues" => rpc::call(action, json!({}))?,
+        "sync_elements" => rpc::call(action, json!({}))?,
+        "get_most_commented_countries" => {
             let period_start = get_arg(&mut args)?;
             let period_end = get_arg(&mut args)?;
-            rpc::call_remote_procedure(
-                "getmostcommentedcountries",
+            rpc::call(
+                action,
                 json!({"period_start":period_start,"period_end":period_end}),
             )?;
         }
-        "generate-areas-elements-mapping" => {
+        "generate_areas_elements_mapping" => {
             let from_element_id = get_arg(&mut args)?.parse::<i64>()?;
             let to_element_id = get_arg(&mut args)?.parse::<i64>()?;
-            rpc::call_remote_procedure(
-                "getmostcommentedcountries",
+            rpc::call(
+                action,
                 json!({"from_element_id":from_element_id,"to_element_id":to_element_id}),
             )?;
         }
-        "add-allowed-action" => {
+        "add_allowed_action" => {
             let admin_name = get_arg(&mut args)?;
-            let action = get_arg(&mut args)?;
-            rpc::call_remote_procedure(
-                "addallowedaction",
-                json!({"admin_name":admin_name,"action":action}),
+            let allowed_action = get_arg(&mut args)?;
+            rpc::call(
+                action,
+                json!({"admin_name":admin_name,"action":allowed_action}),
             )?;
         }
-        "remove-allowed-action" => {
+        "remove_allowed_action" => {
             let admin_name = get_arg(&mut args)?;
-            let action = get_arg(&mut args)?;
-            rpc::call_remote_procedure(
-                "removeallowedaction",
-                json!({"admin_name":admin_name,"action":action}),
+            let allowed_action = get_arg(&mut args)?;
+            rpc::call(
+                action,
+                json!({"admin_name":admin_name,"action":allowed_action}),
             )?;
         }
-        "get-user-activity" => {
+        "get_user_activity" => {
             let id = get_arg(&mut args)?;
             let limit = get_arg(&mut args)
                 .unwrap_or(100000.to_string())
                 .parse::<i64>()?;
-            rpc::call_remote_procedure("getuseractivity", json!({"id":id,"limit":limit}))?;
+            rpc::call(action, json!({"id":id,"limit":limit}))?;
         }
         "search" => {
             let query = get_arg(&mut args)?;
-            rpc::call_remote_procedure("search", json!({"query":query}))?;
+            rpc::call(action, json!({"query":query}))?;
         }
-        "set-area-icon" => {
+        "set_area_icon" => {
             let id = get_arg(&mut args)?;
             let icon_base64 = get_arg(&mut args)?;
             let icon_ext = get_arg(&mut args)?;
-            rpc::call_remote_procedure(
-                "setareaicon",
+            rpc::call(
+                action,
                 json!({"id":id,"icon_base64":icon_base64,"icon_ext":icon_ext}),
             )?;
         }
-        "get-boosts" => rpc::call_remote_procedure("getboosts", json!({}))?,
+        "get-boosts" => rpc::call(action, json!({}))?,
         _ => {
             eprintln!("action {action} does not exist, check btcmap-cli help to see all available actions")
         }
