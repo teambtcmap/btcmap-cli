@@ -1,6 +1,6 @@
 use crate::{rpc, Result};
 use clap::Args;
-use serde_json::json;
+use serde_json::{json, Value};
 
 #[derive(Args)]
 pub struct GetElementArgs {
@@ -15,13 +15,14 @@ pub fn get_element(args: &GetElementArgs) -> Result<()> {
 pub struct SetElementTagArgs {
     pub id: String,
     pub name: String,
-    pub value: serde_json::Value,
+    pub value: String,
 }
 
 pub fn set_element_tag(args: &SetElementTagArgs) -> Result<()> {
+    let value: Value = serde_json::from_str(&args.value)?;
     rpc::call(
         "set_element_tag",
-        json!({"id": args.id,"name": args.name, "value": args.value}),
+        json!({"id": args.id,"name": args.name, "value": value}),
     )
 }
 
