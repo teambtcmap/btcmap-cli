@@ -2,11 +2,12 @@ use crate::settings;
 use crate::Result;
 use colored_json::ToColoredJson;
 use serde::Deserialize;
+use serde_json::Map;
 use serde_json::{json, Value};
 
 #[derive(Deserialize)]
 pub struct RpcResponse {
-    pub result: Option<Value>,
+    pub result: Option<Map<String, Value>>,
     pub error: Option<Value>,
 }
 

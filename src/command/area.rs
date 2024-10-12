@@ -1,4 +1,7 @@
-use crate::{rpc, Result};
+use crate::{
+    rpc::{self, RpcResponse},
+    Result,
+};
 use clap::Args;
 use serde_json::{json, Value};
 
@@ -8,7 +11,15 @@ pub struct GetAreaArgs {
 }
 
 pub fn get_area(args: &GetAreaArgs) -> Result<()> {
-    rpc::call("get_area", json!({"id": args.id}))?.print()
+    rpc::call("get_area", json!({"id": args.id}))
+        .map(|it| RpcResponse {
+            result: it.result.map(|mut it| {
+                it["tags"].as_object_mut().unwrap().remove("geo_json");
+                it
+            }),
+            error: it.error,
+        })?
+        .print()
 }
 
 #[derive(Args)]
