@@ -6,7 +6,7 @@ use serde_json::json;
 pub struct GenerateReportsArgs {}
 
 pub fn generate_reports(_: &GenerateReportsArgs) -> Result<()> {
-    rpc::call("generate_reports", json!({}))
+    rpc::call("generate_reports", json!({}))?.print()
 }
 
 #[derive(Args)]
@@ -19,7 +19,8 @@ pub fn get_trending_countries(args: &GetTrendingCountriesArgs) -> Result<()> {
     rpc::call(
         "get_trending_countries",
         json!({"period_start": args.period_start, "period_end": args.period_end}),
-    )
+    )?
+    .print()
 }
 
 #[derive(Args)]
@@ -32,7 +33,8 @@ pub fn get_trending_communities(args: &GetTrendingCommunitiesArgs) -> Result<()>
     rpc::call(
         "get_trending_communities",
         json!({"period_start": args.period_start, "period_end": args.period_end}),
-    )
+    )?
+    .print()
 }
 
 #[derive(Args)]
@@ -45,5 +47,6 @@ pub fn get_most_commented_countries(args: &GetMostCommentedCountriesArgs) -> Res
     rpc::call(
         "get_most_commented_countries",
         json!({"period_start": args.period_start, "period_end": args.period_end}),
-    )
+    )?
+    .print()
 }

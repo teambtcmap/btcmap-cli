@@ -12,7 +12,7 @@ pub fn add_admin(args: &AddAdminArgs) -> Result<()> {
     rpc::call(
         "add_admin",
         json!({"new_admin_name": args.new_admin_name, "new_admin_password": args.new_admin_password}),
-    )
+    )?.print()
 }
 
 #[derive(Args)]
@@ -25,7 +25,8 @@ pub fn add_allowed_action(args: &AddAllowedActionArgs) -> Result<()> {
     rpc::call(
         "add_allowed_action",
         json!({"admin_name": args.admin_name, "action": args.action}),
-    )
+    )?
+    .print()
 }
 
 #[derive(Args)]
@@ -38,5 +39,6 @@ pub fn remove_allowed_action(args: &RemoveAllowedActionArgs) -> Result<()> {
     rpc::call(
         "remove_allowed_action",
         json!({"admin_name": args.admin_name, "action": args.action}),
-    )
+    )?
+    .print()
 }

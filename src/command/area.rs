@@ -8,7 +8,7 @@ pub struct GetAreaArgs {
 }
 
 pub fn get_area(args: &GetAreaArgs) -> Result<()> {
-    rpc::call("get_area", json!({"id": args.id}))
+    rpc::call("get_area", json!({"id": args.id}))?.print()
 }
 
 #[derive(Args)]
@@ -23,7 +23,8 @@ pub fn set_area_tag(args: &SetAreaTagArgs) -> Result<()> {
     rpc::call(
         "set_area_tag",
         json!({"id": args.id,"name": args.name, "value": value}),
-    )
+    )?
+    .print()
 }
 
 #[derive(Args)]
@@ -33,7 +34,7 @@ pub struct RemoveAreaTagArgs {
 }
 
 pub fn remove_area_tag(args: &RemoveAreaTagArgs) -> Result<()> {
-    rpc::call("remove_area_tag", json!({"id": args.id,"tag": args.tag}))
+    rpc::call("remove_area_tag", json!({"id": args.id,"tag": args.tag}))?.print()
 }
 
 #[derive(Args)]
@@ -47,7 +48,8 @@ pub fn set_area_icon(args: &SetAreaIconArgs) -> Result<()> {
     rpc::call(
         "set_area_icon",
         json!({"id": args.id,"icon_base64": args.icon_base64,"icon_ext": args.icon_ext}),
-    )
+    )?
+    .print()
 }
 
 #[derive(Args)]
@@ -60,5 +62,6 @@ pub fn generate_areas_elements_mapping(args: &GenerateAreasElementsMappingArgs) 
     rpc::call(
         "generate_areas_elements_mapping",
         json!({"from_element_id": args.from_element_id,"to_element_id": args.to_element_id}),
-    )
+    )?
+    .print()
 }

@@ -8,5 +8,5 @@ pub struct SearchArgs {
 }
 
 pub fn search(args: &SearchArgs) -> Result<()> {
-    rpc::call("search", json!({"query": args.query}))
+    rpc::call("search", json!({"query": args.query}))?.print()
 }

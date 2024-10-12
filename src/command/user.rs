@@ -12,5 +12,6 @@ pub fn get_user_activity(args: &GetUserActivityArgs) -> Result<()> {
     rpc::call(
         "get_user_activity",
         json!({"id": args.id, "limit": args.limit}),
-    )
+    )?
+    .print()
 }
