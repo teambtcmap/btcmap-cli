@@ -22,6 +22,7 @@ enum Commands {
     // Setup
     SetServer(command::setup::SetServerArgs),
     Login(command::setup::LoginArgs),
+    State(command::setup::StateArgs),
     // Admin
     AddAdmin(command::admin::AddAdminArgs),
     AddAllowedAction(command::admin::AddAllowedActionArgs),
@@ -67,6 +68,10 @@ fn main() -> Result<()> {
         return command::setup::login(args);
     }
 
+    if let Some(Commands::State(args)) = &cli.command {
+        return command::setup::state(args);
+    }
+
     if settings::get_str("password")?.is_empty() {
         Err("you need to login first, run btcmap-cli login <password>")?;
     }
@@ -80,6 +85,7 @@ fn main() -> Result<()> {
         // Setup
         Commands::SetServer(_) => Err("supposed to be unreachable".into()),
         Commands::Login(_) => Err("supposed to be unreachable".into()),
+        Commands::State(_) => Err("supposed to be unreachable".into()),
         // Admin
         Commands::AddAdmin(args) => command::admin::add_admin(args),
         Commands::AddAllowedAction(args) => command::admin::add_allowed_action(args),
