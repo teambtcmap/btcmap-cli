@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::{env, error::Error};
 mod rpc;
 mod settings;
 use clap::{Parser, Subcommand};
@@ -11,10 +11,12 @@ use command::{
 mod command;
 
 #[derive(Parser)]
-#[command(version, about, long_about = None)]
+#[command(version, about)]
 struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    verbose: u8,
 }
 
 #[derive(Subcommand)]
@@ -59,6 +61,8 @@ type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
+
+    std::env::set_var("VERBOSITY", cli.verbose.to_string());
 
     if let Some(Commands::SetServer(args)) = &cli.command {
         return command::setup::set_server(args);
@@ -119,4 +123,11 @@ fn main() -> Result<()> {
             command::report::get_most_commented_countries(args)
         }
     }
+}
+
+pub fn verbosity() -> i64 {
+    env::var("VERBOSITY")
+        .unwrap_or("".into())
+        .parse()
+        .unwrap_or(0)
 }

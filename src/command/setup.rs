@@ -1,4 +1,4 @@
-use crate::{settings, Result};
+use crate::{settings, verbosity, Result};
 use clap::Args;
 use colored_json::ToColoredJson;
 use serde_json::json;
@@ -14,6 +14,10 @@ pub fn set_server(args: &SetServerArgs) -> Result<()> {
         "dev" => "http://127.0.0.1:8000/rpc",
         _ => &args.url,
     };
+    if verbosity() > 0 {
+        println!("Old value: {}", settings::get_str("api_url")?);
+        println!("New value: {}", url);
+    }
     settings::put_str("api_url", &url)?;
     Ok(())
 }

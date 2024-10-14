@@ -2,6 +2,7 @@
 name = "btcmap-cli"
 version = "0.1.0"
 edition =   "2021"
+description = "Manage BTC Map server via JSON RPC API"
 
 [profile.release]
 lto = true

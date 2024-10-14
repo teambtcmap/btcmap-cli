@@ -1,13 +1,13 @@
 use crate::settings;
+use crate::verbosity;
 use crate::Result;
 use colored_json::ToColoredJson;
 use serde::Deserialize;
-use serde_json::Map;
 use serde_json::{json, Value};
 
 #[derive(Deserialize)]
 pub struct RpcResponse {
-    pub result: Option<Map<String, Value>>,
+    pub result: Option<Value>,
     pub error: Option<Value>,
 }
 
@@ -28,6 +28,12 @@ impl RpcResponse {
 }
 
 pub fn call(method: &str, mut params: Value) -> Result<RpcResponse> {
+    if verbosity() > 0 {
+        println!(
+            "{}",
+            serde_json::to_string(&params)?.to_colored_json_auto()?
+        );
+    }
     let params = params
         .as_object_mut()
         .ok_or("params value is not a valid JSON object")?;
@@ -39,9 +45,15 @@ pub fn call(method: &str, mut params: Value) -> Result<RpcResponse> {
     if api_url.trim().is_empty() {
         api_url = "https://api.btcmap.org/rpc".into();
     }
-    let response: RpcResponse = ureq::post(api_url)
+    if verbosity() >= 2 {
+        println!("{}", serde_json::to_string(&args)?.to_colored_json_auto()?);
+    }
+    let response = ureq::post(api_url)
         .send_json(args)?
         .body_mut()
-        .read_json()?;
-    Ok(response)
+        .read_to_string()?;
+    if verbosity() >= 2 {
+        println!("{}", response);
+    }
+    Ok(serde_json::from_str(&response)?)
 }
