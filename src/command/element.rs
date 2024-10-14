@@ -62,10 +62,10 @@ pub fn boost_element(args: &BoostElementArgs) -> Result<()> {
 }
 
 #[derive(Args)]
-pub struct GetBoostsArgs {}
+pub struct GetBoostedElementsArgs {}
 
-pub fn get_boosts(_: &GetBoostsArgs) -> Result<()> {
-    rpc::call("get_boosts", json!({}))?.print()
+pub fn get_boosted_elements(_: &GetBoostedElementsArgs) -> Result<()> {
+    rpc::call("get_boosted_elements", json!({}))?.print()
 }
 
 #[derive(Args)]

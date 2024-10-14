@@ -16,29 +16,29 @@ pub fn add_admin(args: &AddAdminArgs) -> Result<()> {
 }
 
 #[derive(Args)]
-pub struct AddAllowedActionArgs {
+pub struct AddAdminActionArgs {
     pub admin_name: String,
     pub action: String,
 }
 
-pub fn add_allowed_action(args: &AddAllowedActionArgs) -> Result<()> {
+pub fn add_admin_action(args: &AddAdminActionArgs) -> Result<()> {
     rpc::call(
-        "add_allowed_action",
-        json!({"admin_name": args.admin_name, "action": args.action}),
+        "add_admin_action",
+        json!({"admin": args.admin_name, "action": args.action}),
     )?
     .print()
 }
 
 #[derive(Args)]
-pub struct RemoveAllowedActionArgs {
+pub struct RemoveAdminActionArgs {
     pub admin_name: String,
     pub action: String,
 }
 
-pub fn remove_allowed_action(args: &RemoveAllowedActionArgs) -> Result<()> {
+pub fn remove_admin_action(args: &RemoveAdminActionArgs) -> Result<()> {
     rpc::call(
-        "remove_allowed_action",
-        json!({"admin_name": args.admin_name, "action": args.action}),
+        "remove_admin_action",
+        json!({"admin": args.admin_name, "action": args.action}),
     )?
     .print()
 }
