@@ -109,3 +109,10 @@ pub struct GenerateElementIssuesArgs {}
 pub fn generate_element_issues(_: &GenerateElementIssuesArgs) -> Result<()> {
     rpc::call("generate_element_issues", json!({}))?.print()
 }
+
+#[derive(Args)]
+pub struct GetElementsSnapshotArgs {}
+
+pub fn get_elements_snapshot(_: &GetElementsSnapshotArgs) -> Result<()> {
+    rpc::call("get_elements_snapshot", json!({}))?.print()
+}
