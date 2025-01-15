@@ -42,3 +42,24 @@ pub fn remove_admin_action(args: &RemoveAdminActionArgs) -> Result<()> {
     )?
     .print()
 }
+
+#[derive(Args)]
+pub struct GenerateInvoiceArgs {
+    pub amount_sats: i64,
+    pub description: String,
+}
+
+pub fn generate_invoice(args: &GenerateInvoiceArgs) -> Result<()> {
+    rpc::call(
+        "generate_invoice",
+        json!({"amount_sats": args.amount_sats, "description": args.description}),
+    )?
+    .print()
+}
+
+#[derive(Args)]
+pub struct SyncUnpaidInvoicesArgs {}
+
+pub fn sync_unpaid_invoices(args: &SyncUnpaidInvoicesArgs) -> Result<()> {
+    rpc::call("sync_unpaid_invoices", json!({}))?.print()
+}

@@ -34,6 +34,10 @@ enum Commands {
     AddAdminAction(command::admin::AddAdminActionArgs),
     /// Block other admin from using a certain action. You must be super admin to use this command
     RemoveAdminAction(command::admin::RemoveAdminActionArgs),
+    /// Generate invoice
+    GenerateInvoice(command::admin::GenerateInvoiceArgs),
+    /// Sync unpaid invoices
+    SyncUnpaidInvoices(command::admin::SyncUnpaidInvoicesArgs),
     /// Return all entities matching provided search query. Currently, only areas are returned
     Search(command::common::SearchArgs),
     /// Fetch element by a numeric or OSM (node:12345) id. You can also use node=12345 format
@@ -117,6 +121,8 @@ fn main() -> Result<()> {
         Commands::AddAdmin(args) => command::admin::add_admin(args),
         Commands::AddAdminAction(args) => command::admin::add_admin_action(args),
         Commands::RemoveAdminAction(args) => command::admin::remove_admin_action(args),
+        Commands::GenerateInvoice(args) => command::admin::generate_invoice(args),
+        Commands::SyncUnpaidInvoices(args) => command::admin::sync_unpaid_invoices(args),
         // Common
         Commands::Search(args) => command::common::search(args),
         // Element
