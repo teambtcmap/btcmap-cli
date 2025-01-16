@@ -60,6 +60,6 @@ pub fn generate_invoice(args: &GenerateInvoiceArgs) -> Result<()> {
 #[derive(Args)]
 pub struct SyncUnpaidInvoicesArgs {}
 
-pub fn sync_unpaid_invoices(args: &SyncUnpaidInvoicesArgs) -> Result<()> {
+pub fn sync_unpaid_invoices(_args: &SyncUnpaidInvoicesArgs) -> Result<()> {
     rpc::call("sync_unpaid_invoices", json!({}))?.print()
 }

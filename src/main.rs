@@ -48,6 +48,8 @@ enum Commands {
     RemoveElementTag(command::element::RemoveElementTagArgs),
     /// Add coment to a certain element. You can use either numeric or OSM (node:12345) id
     AddElementComment(command::element::AddElementCommentArgs),
+    /// Add paid coment to a certain element. You can use either numeric or OSM (node:12345) id
+    AddPaidElementComment(command::element::AddPaidElementCommentArgs),
     /// Boost an element for a set number of days. You can use either numeric or OSM (node:12345) id
     BoostElement(command::element::BoostElementArgs),
     /// Get all boosted elements
@@ -130,6 +132,7 @@ fn main() -> Result<()> {
         Commands::SetElementTag(args) => element::set_element_tag(args),
         Commands::RemoveElementTag(args) => element::remove_element_tag(args),
         Commands::AddElementComment(args) => element::add_element_comment(args),
+        Commands::AddPaidElementComment(args) => element::add_paid_element_comment(args),
         Commands::BoostElement(args) => element::boost_element(args),
         Commands::GetBoostedElements(args) => element::get_boosted_elements(args),
         Commands::SyncElements(args) => element::sync_elements(args),

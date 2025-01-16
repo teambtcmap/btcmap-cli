@@ -52,6 +52,20 @@ pub fn add_element_comment(args: &AddElementCommentArgs) -> Result<()> {
 }
 
 #[derive(Args)]
+pub struct AddPaidElementCommentArgs {
+    pub id: String,
+    pub comment: String,
+}
+
+pub fn add_paid_element_comment(args: &AddPaidElementCommentArgs) -> Result<()> {
+    rpc::call(
+        "add_paid_element_comment",
+        json!({"element_id": args.id,"comment": args.comment}),
+    )?
+    .print()
+}
+
+#[derive(Args)]
 pub struct BoostElementArgs {
     pub id: String,
     pub days: i64,
