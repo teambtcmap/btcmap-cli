@@ -48,8 +48,6 @@ enum Commands {
     RemoveElementTag(command::element::RemoveElementTagArgs),
     /// Add coment to a certain element. You can use either numeric or OSM (node:12345) id
     AddElementComment(command::element::AddElementCommentArgs),
-    /// Add paid coment to a certain element. You can use either numeric or OSM (node:12345) id
-    AddPaidElementComment(command::element::AddPaidElementCommentArgs),
     /// Boost an element for a set number of days. You can use either numeric or OSM (node:12345) id
     BoostElement(command::element::BoostElementArgs),
     /// Get all boosted elements
@@ -84,6 +82,14 @@ enum Commands {
     GetTrendingCommunities(command::report::GetTrendingCommunitiesArgs),
     /// Find which countries had the most comments during a certain time period. Arguemnts should be valid ISO dates (example: 2024-09-10)
     GetMostCommentedCountries(command::report::GetMostCommentedCountriesArgs),
+    /// Get current element comment price in sats
+    PaywallGetAddElementCommentQuote,
+    /// Submit comment to receive an invoice
+    PaywallAddElementComment(command::paywall::PaywallAddElementCommentArgs),
+    /// Get current element boost price in sats
+    PaywallGetBoostElementQuote,
+    /// Submit boost request to receive an invoice
+    PaywallBoostElement(command::paywall::PaywallBoostElementArgs),
 }
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -132,7 +138,6 @@ fn main() -> Result<()> {
         Commands::SetElementTag(args) => element::set_element_tag(args),
         Commands::RemoveElementTag(args) => element::remove_element_tag(args),
         Commands::AddElementComment(args) => element::add_element_comment(args),
-        Commands::AddPaidElementComment(args) => element::add_paid_element_comment(args),
         Commands::BoostElement(args) => element::boost_element(args),
         Commands::GetBoostedElements(args) => element::get_boosted_elements(args),
         Commands::SyncElements(args) => element::sync_elements(args),
@@ -155,6 +160,17 @@ fn main() -> Result<()> {
         Commands::GetMostCommentedCountries(args) => {
             command::report::get_most_commented_countries(args)
         }
+        // Paywall
+        Commands::PaywallGetAddElementCommentQuote => {
+            command::paywall::paywall_get_add_element_comment_quote()
+        }
+        Commands::PaywallAddElementComment(args) => {
+            command::paywall::paywall_add_element_comment(args)
+        }
+        Commands::PaywallGetBoostElementQuote => {
+            command::paywall::paywall_get_boost_element_quote()
+        }
+        Commands::PaywallBoostElement(args) => command::paywall::paywall_boost_element(args),
     }
 }
 
