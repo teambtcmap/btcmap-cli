@@ -38,6 +38,8 @@ enum Commands {
     GenerateInvoice(command::admin::GenerateInvoiceArgs),
     /// Sync unpaid invoices
     SyncUnpaidInvoices(command::admin::SyncUnpaidInvoicesArgs),
+    /// Get invoice details, you only need to pass invoice ID (integer)
+    GetInvoice(command::admin::GetInvoiceArgs),
     /// Return all entities matching provided search query. Currently, only areas are returned
     Search(command::common::SearchArgs),
     /// Fetch element by a numeric or OSM (node:12345) id. You can also use node=12345 format
@@ -131,6 +133,7 @@ fn main() -> Result<()> {
         Commands::RemoveAdminAction(args) => command::admin::remove_admin_action(args),
         Commands::GenerateInvoice(args) => command::admin::generate_invoice(args),
         Commands::SyncUnpaidInvoices(args) => command::admin::sync_unpaid_invoices(args),
+        Commands::GetInvoice(args) => command::admin::get_invoice(args),
         // Common
         Commands::Search(args) => command::common::search(args),
         // Element

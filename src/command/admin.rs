@@ -63,3 +63,12 @@ pub struct SyncUnpaidInvoicesArgs {}
 pub fn sync_unpaid_invoices(_args: &SyncUnpaidInvoicesArgs) -> Result<()> {
     rpc::call("sync_unpaid_invoices", json!({}))?.print()
 }
+
+#[derive(Args)]
+pub struct GetInvoiceArgs {
+    pub id: i64,
+}
+
+pub fn get_invoice(args: &GetInvoiceArgs) -> Result<()> {
+    rpc::call("get_invoice", json!({"id": args.id }))?.print()
+}
