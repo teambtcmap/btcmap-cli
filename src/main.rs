@@ -6,7 +6,6 @@ use command::{
     area,
     element::{
         self, GenerateElementCategoriesArgs, GenerateElementIconsArgs, GenerateElementIssuesArgs,
-        GetElementsSnapshotArgs,
     },
 };
 mod command;
@@ -62,8 +61,6 @@ enum Commands {
     GenerateElementCategories(GenerateElementCategoriesArgs),
     /// Generate issues tags for a specific element id range. This command is supposed to be called automatically by a BTC Map server internal shceduler
     GenerateElementIssues(GenerateElementIssuesArgs),
-    /// Get snapshot of all visible elements. This command is supposed to be called automatically by a BTC Map server internal shceduler
-    GetElementsSnapshot(GetElementsSnapshotArgs),
     /// Fetch area by either numeric id or string alias (th)
     GetArea(command::area::GetAreaArgs),
     /// Set tag to a certain area. You can use either numeric id or a string alias (th)
@@ -147,7 +144,6 @@ fn main() -> Result<()> {
         Commands::GenerateElementIcons(args) => element::generate_element_icons(args),
         Commands::GenerateElementCategories(args) => element::generate_element_categories(args),
         Commands::GenerateElementIssues(args) => element::generate_element_issues(args),
-        Commands::GetElementsSnapshot(args) => element::get_elements_snapshot(args),
         // Area
         Commands::GetArea(args) => area::get_area(args),
         Commands::SetAreaTag(args) => area::set_area_tag(args),
