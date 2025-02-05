@@ -4,7 +4,7 @@ use serde_json::{json, Value};
 
 #[derive(Args)]
 pub struct GetElementArgs {
-    pub id: String,
+    pub id: i64,
 }
 
 pub fn get_element(args: &GetElementArgs) -> Result<()> {
