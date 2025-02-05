@@ -13,42 +13,36 @@ pub fn get_element(args: &GetElementArgs) -> Result<()> {
 
 #[derive(Args)]
 pub struct SetElementTagArgs {
-    pub id: String,
-    pub name: String,
-    pub value: String,
+    pub element_id: i64,
+    pub tag_name: String,
+    pub tag_value: String,
 }
 
 pub fn set_element_tag(args: &SetElementTagArgs) -> Result<()> {
-    let value: Value = serde_json::from_str(&args.value)?;
+    let value: Value = serde_json::from_str(&args.tag_value)?;
     rpc::call(
         "set_element_tag",
-        json!({"id": args.id,"name": args.name, "value": value}),
+        json!({"element_id": args.element_id, "tag_name": args.tag_name, "tag_value": value}),
     )?
     .print()
 }
 
 #[derive(Args)]
 pub struct RemoveElementTagArgs {
-    pub id: String,
-    pub tag: String,
+    pub element_id: i64,
+    pub tag_name: String,
 }
 
 pub fn remove_element_tag(args: &RemoveElementTagArgs) -> Result<()> {
-    rpc::call("remove_element_tag", json!({"id": args.id,"tag": args.tag}))?.print()
-}
-
-#[derive(Args)]
-pub struct AddElementCommentArgs {
-    pub id: String,
-    pub comment: String,
-}
-
-pub fn add_element_comment(args: &AddElementCommentArgs) -> Result<()> {
     rpc::call(
-        "add_element_comment",
-        json!({"id": args.id,"comment": args.comment}),
+        "remove_element_tag",
+        json!({"element_id": args.element_id, "tag_name": args.tag_name}),
     )?
     .print()
+}
+
+pub fn get_boosted_elements() -> Result<()> {
+    rpc::call("get_boosted_elements", json!({}))?.print()
 }
 
 #[derive(Args)]
@@ -58,14 +52,39 @@ pub struct BoostElementArgs {
 }
 
 pub fn boost_element(args: &BoostElementArgs) -> Result<()> {
-    rpc::call("boost_element", json!({"id": args.id,"days": args.days}))?.print()
+    rpc::call("boost_element", json!({"id": args.id, "days": args.days}))?.print()
+}
+
+pub fn paywall_get_boost_element_quote() -> Result<()> {
+    rpc::call("paywall_get_boost_element_quote", json!({}))?.print()
 }
 
 #[derive(Args)]
-pub struct GetBoostedElementsArgs {}
+pub struct PaywallBoostElementArgs {
+    pub element_id: String,
+    pub days: i64,
+}
 
-pub fn get_boosted_elements(_: &GetBoostedElementsArgs) -> Result<()> {
-    rpc::call("get_boosted_elements", json!({}))?.print()
+pub fn paywall_boost_element(args: &PaywallBoostElementArgs) -> Result<()> {
+    rpc::call(
+        "paywall_boost_element",
+        json!({"element_id": args.element_id, "days": args.days}),
+    )?
+    .print()
+}
+
+#[derive(Args)]
+pub struct AddElementCommentArgs {
+    pub element_id: i64,
+    pub comment: String,
+}
+
+pub fn add_element_comment(args: &AddElementCommentArgs) -> Result<()> {
+    rpc::call(
+        "add_element_comment",
+        json!({"element_id": args.element_id, "comment": args.comment}),
+    )?
+    .print()
 }
 
 #[derive(Args)]

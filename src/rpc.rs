@@ -49,7 +49,7 @@ pub fn call(method: &str, mut params: Value) -> Result<RpcResponse> {
         println!("{}", serde_json::to_string(&args)?.to_colored_json_auto()?);
     }
     let response = ureq::post(api_url)
-        .header("Content-Type", "application/json")
+        //.header("Content-Type", "application/json")
         .send_json(args)?
         .body_mut()
         .read_to_string()?;

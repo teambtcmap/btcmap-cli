@@ -43,16 +43,20 @@ enum Commands {
     Search(command::common::SearchArgs),
     /// Fetch element by a numeric or OSM (node:12345) id. You can also use node=12345 format
     GetElement(command::element::GetElementArgs),
-    /// Set tag to a certain element. You can use either numeric or OSM (node:12345) id. Every tag must be a valid JSON value. Nulls are not allowed and will be interpreted as deletion requests
+    /// Set tag to a certain element. Every tag must be a valid JSON value. Nulls are not allowed and will be interpreted as deletion requests
     SetElementTag(command::element::SetElementTagArgs),
-    /// Remove tag from a certain element. You can use either numeric or OSM (node:12345) id
+    /// Remove tag from a certain element
     RemoveElementTag(command::element::RemoveElementTagArgs),
-    /// Add coment to a certain element. You can use either numeric or OSM (node:12345) id
-    AddElementComment(command::element::AddElementCommentArgs),
+    /// Get all boosted elements
+    GetBoostedElements,
     /// Boost an element for a set number of days. You can use either numeric or OSM (node:12345) id
     BoostElement(command::element::BoostElementArgs),
-    /// Get all boosted elements
-    GetBoostedElements(command::element::GetBoostedElementsArgs),
+    /// Get current element boost price in sats
+    PaywallGetBoostElementQuote,
+    /// Submit boost request to receive an invoice
+    PaywallBoostElement(command::element::PaywallBoostElementArgs),
+    /// Add coment to a certain element
+    AddElementComment(command::element::AddElementCommentArgs),
     /// Fetch the latest Overpass snapshot and merge it with cached elements. It may take a long time and it's not supposed to be called manually
     SyncElements(command::element::SyncElementsArgs),
     /// Generate icon:android tags for a specific element id range
@@ -85,10 +89,6 @@ enum Commands {
     PaywallGetAddElementCommentQuote,
     /// Submit comment to receive an invoice
     PaywallAddElementComment(command::paywall::PaywallAddElementCommentArgs),
-    /// Get current element boost price in sats
-    PaywallGetBoostElementQuote,
-    /// Submit boost request to receive an invoice
-    PaywallBoostElement(command::paywall::PaywallBoostElementArgs),
 }
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -137,9 +137,13 @@ fn main() -> Result<()> {
         Commands::GetElement(args) => element::get_element(args),
         Commands::SetElementTag(args) => element::set_element_tag(args),
         Commands::RemoveElementTag(args) => element::remove_element_tag(args),
-        Commands::AddElementComment(args) => element::add_element_comment(args),
+        Commands::GetBoostedElements => element::get_boosted_elements(),
         Commands::BoostElement(args) => element::boost_element(args),
-        Commands::GetBoostedElements(args) => element::get_boosted_elements(args),
+        Commands::PaywallGetBoostElementQuote => {
+            command::element::paywall_get_boost_element_quote()
+        }
+        Commands::PaywallBoostElement(args) => command::element::paywall_boost_element(args),
+        Commands::AddElementComment(args) => element::add_element_comment(args),
         Commands::SyncElements(args) => element::sync_elements(args),
         Commands::GenerateElementIcons(args) => element::generate_element_icons(args),
         Commands::GenerateElementCategories(args) => element::generate_element_categories(args),
@@ -166,10 +170,6 @@ fn main() -> Result<()> {
         Commands::PaywallAddElementComment(args) => {
             command::paywall::paywall_add_element_comment(args)
         }
-        Commands::PaywallGetBoostElementQuote => {
-            command::paywall::paywall_get_boost_element_quote()
-        }
-        Commands::PaywallBoostElement(args) => command::paywall::paywall_boost_element(args),
     }
 }
 
