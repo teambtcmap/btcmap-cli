@@ -27,21 +27,8 @@ enum Commands {
     Login(command::setup::LoginArgs),
     /// Show all locally cached data
     State(command::setup::StateArgs),
-    /// Create a new admin user. New admins have no permissions by default, use add-admin-action to allow certain acitons
-    AddAdmin(command::admin::AddAdminArgs),
-    /// Allow other admin to perform a certain action. You must be super admin to use this command
-    AddAdminAction(command::admin::AddAdminActionArgs),
-    /// Block other admin from using a certain action. You must be super admin to use this command
-    RemoveAdminAction(command::admin::RemoveAdminActionArgs),
-    /// Generate invoice
-    GenerateInvoice(command::admin::GenerateInvoiceArgs),
-    /// Sync unpaid invoices
-    SyncUnpaidInvoices(command::admin::SyncUnpaidInvoicesArgs),
-    /// Get invoice details, you only need to pass invoice ID (integer)
-    GetInvoice(command::admin::GetInvoiceArgs),
-    /// Return all entities matching provided search query. Currently, only areas are returned
-    Search(command::common::SearchArgs),
-    /// Fetch element by a numeric or OSM (node:12345) id. You can also use node=12345 format
+
+    /// Fetch element by id
     GetElement(command::element::GetElementArgs),
     /// Set tag to a certain element. Every tag must be a valid JSON value. Nulls are not allowed and will be interpreted as deletion requests
     SetElementTag(command::element::SetElementTagArgs),
@@ -57,14 +44,33 @@ enum Commands {
     PaywallBoostElement(command::element::PaywallBoostElementArgs),
     /// Add coment to a certain element
     AddElementComment(command::element::AddElementCommentArgs),
+    /// Get current element comment price in sats
+    PaywallGetAddElementCommentQuote,
+    /// Submit comment to receive an invoice
+    PaywallAddElementComment(command::element::PaywallAddElementCommentArgs),
+    /// Generate issues tags for a specific element id range. This command is supposed to be called automatically by a BTC Map server internal shceduler
+    GenerateElementIssues(GenerateElementIssuesArgs),
     /// Fetch the latest Overpass snapshot and merge it with cached elements. It may take a long time and it's not supposed to be called manually
     SyncElements(command::element::SyncElementsArgs),
     /// Generate icon:android tags for a specific element id range
     GenerateElementIcons(GenerateElementIconsArgs),
     /// Generate category tags for a specific element id range
     GenerateElementCategories(GenerateElementCategoriesArgs),
-    /// Generate issues tags for a specific element id range. This command is supposed to be called automatically by a BTC Map server internal shceduler
-    GenerateElementIssues(GenerateElementIssuesArgs),
+
+    /// Create a new admin user. New admins have no permissions by default, use add-admin-action to allow certain acitons
+    AddAdmin(command::admin::AddAdminArgs),
+    /// Allow other admin to perform a certain action. You must be super admin to use this command
+    AddAdminAction(command::admin::AddAdminActionArgs),
+    /// Block other admin from using a certain action. You must be super admin to use this command
+    RemoveAdminAction(command::admin::RemoveAdminActionArgs),
+    /// Generate invoice
+    GenerateInvoice(command::admin::GenerateInvoiceArgs),
+    /// Sync unpaid invoices
+    SyncUnpaidInvoices(command::admin::SyncUnpaidInvoicesArgs),
+    /// Get invoice details, you only need to pass invoice ID (integer)
+    GetInvoice(command::admin::GetInvoiceArgs),
+    /// Return all entities matching provided search query. Currently, only areas are returned
+    Search(command::common::SearchArgs),
     /// Fetch area by either numeric id or string alias (th)
     GetArea(command::area::GetAreaArgs),
     /// Set tag to a certain area. You can use either numeric id or a string alias (th)
@@ -85,10 +91,6 @@ enum Commands {
     GetTrendingCommunities(command::report::GetTrendingCommunitiesArgs),
     /// Find which countries had the most comments during a certain time period. Arguemnts should be valid ISO dates (example: 2024-09-10)
     GetMostCommentedCountries(command::report::GetMostCommentedCountriesArgs),
-    /// Get current element comment price in sats
-    PaywallGetAddElementCommentQuote,
-    /// Submit comment to receive an invoice
-    PaywallAddElementComment(command::paywall::PaywallAddElementCommentArgs),
 }
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -124,15 +126,6 @@ fn main() -> Result<()> {
         Commands::SetServer(_) => Err("supposed to be unreachable".into()),
         Commands::Login(_) => Err("supposed to be unreachable".into()),
         Commands::State(_) => Err("supposed to be unreachable".into()),
-        // Admin
-        Commands::AddAdmin(args) => command::admin::add_admin(args),
-        Commands::AddAdminAction(args) => command::admin::add_admin_action(args),
-        Commands::RemoveAdminAction(args) => command::admin::remove_admin_action(args),
-        Commands::GenerateInvoice(args) => command::admin::generate_invoice(args),
-        Commands::SyncUnpaidInvoices(args) => command::admin::sync_unpaid_invoices(args),
-        Commands::GetInvoice(args) => command::admin::get_invoice(args),
-        // Common
-        Commands::Search(args) => command::common::search(args),
         // Element
         Commands::GetElement(args) => element::get_element(args),
         Commands::SetElementTag(args) => element::set_element_tag(args),
@@ -144,10 +137,25 @@ fn main() -> Result<()> {
         }
         Commands::PaywallBoostElement(args) => command::element::paywall_boost_element(args),
         Commands::AddElementComment(args) => element::add_element_comment(args),
+        Commands::PaywallGetAddElementCommentQuote => {
+            command::element::paywall_get_add_element_comment_quote()
+        }
+        Commands::PaywallAddElementComment(args) => {
+            command::element::paywall_add_element_comment(args)
+        }
+        Commands::GenerateElementIssues(args) => element::generate_element_issues(args),
         Commands::SyncElements(args) => element::sync_elements(args),
         Commands::GenerateElementIcons(args) => element::generate_element_icons(args),
         Commands::GenerateElementCategories(args) => element::generate_element_categories(args),
-        Commands::GenerateElementIssues(args) => element::generate_element_issues(args),
+        // Admin
+        Commands::AddAdmin(args) => command::admin::add_admin(args),
+        Commands::AddAdminAction(args) => command::admin::add_admin_action(args),
+        Commands::RemoveAdminAction(args) => command::admin::remove_admin_action(args),
+        Commands::GenerateInvoice(args) => command::admin::generate_invoice(args),
+        Commands::SyncUnpaidInvoices(args) => command::admin::sync_unpaid_invoices(args),
+        Commands::GetInvoice(args) => command::admin::get_invoice(args),
+        // Common
+        Commands::Search(args) => command::common::search(args),
         // Area
         Commands::GetArea(args) => area::get_area(args),
         Commands::SetAreaTag(args) => area::set_area_tag(args),
@@ -162,13 +170,6 @@ fn main() -> Result<()> {
         Commands::GetTrendingCommunities(args) => command::report::get_trending_communities(args),
         Commands::GetMostCommentedCountries(args) => {
             command::report::get_most_commented_countries(args)
-        }
-        // Paywall
-        Commands::PaywallGetAddElementCommentQuote => {
-            command::paywall::paywall_get_add_element_comment_quote()
-        }
-        Commands::PaywallAddElementComment(args) => {
-            command::paywall::paywall_add_element_comment(args)
         }
     }
 }

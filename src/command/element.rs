@@ -87,6 +87,31 @@ pub fn add_element_comment(args: &AddElementCommentArgs) -> Result<()> {
     .print()
 }
 
+pub fn paywall_get_add_element_comment_quote() -> Result<()> {
+    rpc::call("paywall_get_add_element_comment_quote", json!({}))?.print()
+}
+
+#[derive(Args)]
+pub struct PaywallAddElementCommentArgs {
+    pub element_id: String,
+    pub comment: String,
+}
+
+pub fn paywall_add_element_comment(args: &PaywallAddElementCommentArgs) -> Result<()> {
+    rpc::call(
+        "paywall_add_element_comment",
+        json!({"element_id": args.element_id,"comment": args.comment}),
+    )?
+    .print()
+}
+
+#[derive(Args)]
+pub struct GenerateElementIssuesArgs {}
+
+pub fn generate_element_issues(_: &GenerateElementIssuesArgs) -> Result<()> {
+    rpc::call("generate_element_issues", json!({}))?.print()
+}
+
 #[derive(Args)]
 pub struct SyncElementsArgs {}
 
@@ -120,11 +145,4 @@ pub fn generate_element_categories(args: &GenerateElementCategoriesArgs) -> Resu
         json!({"from_element_id": args.from_element_id,"to_element_id": args.to_element_id}),
     )?
     .print()
-}
-
-#[derive(Args)]
-pub struct GenerateElementIssuesArgs {}
-
-pub fn generate_element_issues(_: &GenerateElementIssuesArgs) -> Result<()> {
-    rpc::call("generate_element_issues", json!({}))?.print()
 }
