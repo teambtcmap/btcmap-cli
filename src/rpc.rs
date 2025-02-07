@@ -27,7 +27,7 @@ impl RpcResponse {
     }
 }
 
-pub fn call(method: &str, mut params: Value) -> Result<RpcResponse> {
+pub fn call(method: &str, params: Value) -> Result<RpcResponse> {
     if verbosity() > 0 {
         println!(
             "{}",
@@ -35,9 +35,8 @@ pub fn call(method: &str, mut params: Value) -> Result<RpcResponse> {
         );
     }
     let params = params
-        .as_object_mut()
+        .as_object()
         .ok_or("params value is not a valid JSON object")?;
-    params.insert("password".into(), settings::get_str("password")?.into());
     let args = json!(
         {"jsonrpc": "2.0", "method": method, "params": params, "id": 1}
     );
@@ -49,7 +48,11 @@ pub fn call(method: &str, mut params: Value) -> Result<RpcResponse> {
         println!("{}", serde_json::to_string(&args)?.to_colored_json_auto()?);
     }
     let response = ureq::post(api_url)
-        //.header("Content-Type", "application/json")
+        .header("Content-Type", "application/json")
+        .header(
+            "Authorization",
+            format!("Bearer {}", settings::get_str("password")?),
+        )
         .send_json(args)?
         .body_mut()
         .read_to_string()?;

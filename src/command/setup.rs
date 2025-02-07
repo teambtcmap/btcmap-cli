@@ -1,4 +1,4 @@
-use crate::{rpc, settings, verbosity, Result};
+use crate::{settings, verbosity, Result};
 use clap::Args;
 use colored_json::ToColoredJson;
 use serde_json::json;
@@ -28,22 +28,7 @@ pub struct LoginArgs {
 }
 
 pub fn login(args: &LoginArgs) -> Result<()> {
-    let old_password = settings::get_str("password")?;
-    settings::put_str("password", &args.password)?;
-    match rpc::call("get_area", json!({ "id": "th" })) {
-        Ok(res) => match res.error {
-            Some(_) => {
-                res.print()?;
-                settings::put_str("password", &old_password)?;
-                Err("Password is likely wrong")?
-            }
-            None => Ok(()),
-        },
-        Err(e) => {
-            settings::put_str("password", &old_password)?;
-            Err(e)?
-        }
-    }
+    settings::put_str("password", &args.password)
 }
 
 #[derive(Args)]
