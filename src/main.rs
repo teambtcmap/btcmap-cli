@@ -91,6 +91,9 @@ enum Commands {
     GetTrendingCommunities(command::report::GetTrendingCommunitiesArgs),
     /// Find which countries had the most comments during a certain time period. Arguemnts should be valid ISO dates (example: 2024-09-10)
     GetMostCommentedCountries(command::report::GetMostCommentedCountriesArgs),
+
+    /// Custom RPC
+    RPC(command::common::CustomArgs),
 }
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -171,6 +174,8 @@ fn main() -> Result<()> {
         Commands::GetMostCommentedCountries(args) => {
             command::report::get_most_commented_countries(args)
         }
+        // common
+        Commands::RPC(args) => command::common::rpc(args),
     }
 }
 
