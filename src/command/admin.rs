@@ -1,6 +1,25 @@
-use crate::{rpc, Result};
+use crate::{rpc, settings, Result};
 use clap::Args;
 use serde_json::json;
+
+#[derive(Args)]
+pub struct LoginArgs {
+    pub username: String,
+    pub password: String,
+    pub token_label: String,
+}
+
+pub fn login(args: &LoginArgs) -> Result<()> {
+    let res = rpc::call(
+        "create_auth_token",
+        json!({"username": args.username, "password": args.password, "token_label": args.token_label}),
+    )?;
+    let res = res.result.unwrap();
+    let token = res["token"].as_str().unwrap();
+    settings::put_str("password", token)?;
+    println!("You are now logged in as {}", args.username);
+    Ok(())
+}
 
 #[derive(Args)]
 pub struct AddAdminArgs {

@@ -23,8 +23,6 @@ struct Cli {
 enum Commands {
     /// Set a JSON RPC API URL
     SetServer(command::setup::SetServerArgs),
-    /// Try to login and save password for future calls, if successful
-    Login(command::setup::LoginArgs),
     /// Show all locally cached data
     State(command::setup::StateArgs),
 
@@ -57,6 +55,8 @@ enum Commands {
     /// Generate category tags for a specific element id range
     GenerateElementCategories(GenerateElementCategoriesArgs),
 
+    /// Login with your username and password and get an auth token
+    Login(command::admin::LoginArgs),
     /// Create a new admin user. New admins have no permissions by default, use add-admin-action to allow certain acitons
     AddAdmin(command::admin::AddAdminArgs),
     /// Change admin password. Knowledge of an old password is required
@@ -110,7 +110,7 @@ fn main() -> Result<()> {
     }
 
     if let Some(Commands::Login(args)) = &cli.command {
-        return command::setup::login(args);
+        return command::admin::login(args);
     }
 
     if let Some(Commands::State(args)) = &cli.command {

@@ -23,15 +23,6 @@ pub fn set_server(args: &SetServerArgs) -> Result<()> {
 }
 
 #[derive(Args)]
-pub struct LoginArgs {
-    pub password: String,
-}
-
-pub fn login(args: &LoginArgs) -> Result<()> {
-    settings::put_str("password", &args.password)
-}
-
-#[derive(Args)]
 pub struct StateArgs {}
 
 pub fn state(_: &StateArgs) -> Result<()> {
