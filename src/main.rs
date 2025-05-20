@@ -59,6 +59,8 @@ enum Commands {
 
     /// Create a new admin user. New admins have no permissions by default, use add-admin-action to allow certain acitons
     AddAdmin(command::admin::AddAdminArgs),
+    /// Change admin password. Knowledge of an old password is required
+    SetPassword(command::admin::SetPasswordArgs),
     /// Allow other admin to perform a certain action. You must be super admin to use this command
     AddAdminAction(command::admin::AddAdminActionArgs),
     /// Block other admin from using a certain action. You must be super admin to use this command
@@ -152,6 +154,7 @@ fn main() -> Result<()> {
         Commands::GenerateElementCategories(args) => element::generate_element_categories(args),
         // Admin
         Commands::AddAdmin(args) => command::admin::add_admin(args),
+        Commands::SetPassword(args) => command::admin::set_password(args),
         Commands::AddAdminAction(args) => command::admin::add_admin_action(args),
         Commands::RemoveAdminAction(args) => command::admin::remove_admin_action(args),
         Commands::GenerateInvoice(args) => command::admin::generate_invoice(args),

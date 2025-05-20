@@ -16,6 +16,20 @@ pub fn add_admin(args: &AddAdminArgs) -> Result<()> {
 }
 
 #[derive(Args)]
+pub struct SetPasswordArgs {
+    pub old_password: String,
+    pub new_password: String,
+}
+
+pub fn set_password(args: &SetPasswordArgs) -> Result<()> {
+    rpc::call(
+        "set_password",
+        json!({"old_password": args.old_password, "new_password": args.new_password}),
+    )?
+    .print()
+}
+
+#[derive(Args)]
 pub struct AddAdminActionArgs {
     pub admin_name: String,
     pub action: String,
