@@ -11,12 +11,12 @@ use command::{
 mod command;
 
 #[derive(Parser)]
-#[command(version, about)]
+#[command(version, about, long_about = None)]
 struct Cli {
-    #[command(subcommand)]
-    command: Option<Commands>,
     #[arg(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
+    #[command(subcommand)]
+    command: Option<Commands>,
 }
 
 #[derive(Subcommand)]
@@ -55,12 +55,13 @@ enum Commands {
     /// Generate category tags for a specific element id range
     GenerateElementCategories(GenerateElementCategoriesArgs),
 
+    // Auth - https://github.com/teambtcmap/btcmap-api/blob/master/docs/rpc-api/auth.md
+    /// Change admin password. Knowledge of an old password is required
+    ChangePassword(command::admin::ChangePasswordArgs),
     /// Login with your username and password and get an auth token
     Login(command::admin::LoginArgs),
     /// Create a new admin user. New admins have no permissions by default, use add-admin-action to allow certain acitons
     AddAdmin(command::admin::AddAdminArgs),
-    /// Change admin password. Knowledge of an old password is required
-    SetPassword(command::admin::SetPasswordArgs),
     /// Allow other admin to perform a certain action. You must be super admin to use this command
     AddAdminAction(command::admin::AddAdminActionArgs),
     /// Block other admin from using a certain action. You must be super admin to use this command
@@ -109,6 +110,10 @@ fn main() -> Result<()> {
         return command::setup::set_server(args);
     }
 
+    if let Some(Commands::ChangePassword(args)) = &cli.command {
+        return command::admin::change_password(args);
+    }
+
     if let Some(Commands::Login(args)) = &cli.command {
         return command::admin::login(args);
     }
@@ -131,6 +136,7 @@ fn main() -> Result<()> {
         Commands::SetServer(_) => Err("supposed to be unreachable".into()),
         Commands::Login(_) => Err("supposed to be unreachable".into()),
         Commands::State(_) => Err("supposed to be unreachable".into()),
+        Commands::ChangePassword(_) => Err("supposed to be unreachable".into()),
         // Element
         Commands::GetElement(args) => element::get_element(args),
         Commands::SetElementTag(args) => element::set_element_tag(args),
@@ -154,7 +160,6 @@ fn main() -> Result<()> {
         Commands::GenerateElementCategories(args) => element::generate_element_categories(args),
         // Admin
         Commands::AddAdmin(args) => command::admin::add_admin(args),
-        Commands::SetPassword(args) => command::admin::set_password(args),
         Commands::AddAdminAction(args) => command::admin::add_admin_action(args),
         Commands::RemoveAdminAction(args) => command::admin::remove_admin_action(args),
         Commands::GenerateInvoice(args) => command::admin::generate_invoice(args),
