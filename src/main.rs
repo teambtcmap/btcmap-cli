@@ -58,6 +58,8 @@ enum Commands {
     // Auth - https://github.com/teambtcmap/btcmap-api/blob/master/docs/rpc-api/auth.md
     /// Change admin password. Knowledge of an old password is required
     ChangePassword(command::admin::ChangePasswordArgs),
+    /// Create API key. You need to provide your username and password, as well as a key label
+    CreateApiKey(command::admin::CreateApiKeyArgs),
     /// Login with your username and password and get an auth token
     Login(command::admin::LoginArgs),
     /// Create a new admin user. New admins have no permissions by default, use add-admin-action to allow certain acitons
@@ -118,6 +120,10 @@ fn main() -> Result<()> {
         return command::admin::login(args);
     }
 
+    if let Some(Commands::CreateApiKey(args)) = &cli.command {
+        return command::admin::create_api_key(args);
+    }
+
     if let Some(Commands::State(args)) = &cli.command {
         return command::setup::state(args);
     }
@@ -135,6 +141,7 @@ fn main() -> Result<()> {
         // Setup
         Commands::SetServer(_) => Err("supposed to be unreachable".into()),
         Commands::Login(_) => Err("supposed to be unreachable".into()),
+        Commands::CreateApiKey(_) => Err("supposed to be unreachable".into()),
         Commands::State(_) => Err("supposed to be unreachable".into()),
         Commands::ChangePassword(_) => Err("supposed to be unreachable".into()),
         // Element

@@ -6,19 +6,34 @@ use serde_json::json;
 pub struct LoginArgs {
     pub username: String,
     pub password: String,
-    pub token_label: String,
+    pub label: String,
 }
 
 pub fn login(args: &LoginArgs) -> Result<()> {
     let res = rpc::call(
-        "create_auth_token",
-        json!({"username": args.username, "password": args.password, "token_label": args.token_label}),
+        "create_api_key",
+        json!({"username": args.username, "password": args.password, "label": args.label}),
     )?;
     let res = res.result.unwrap();
-    let token = res["token"].as_str().unwrap();
-    settings::put_str("password", token)?;
+    let api_key = res["api_key"].as_str().unwrap();
+    settings::put_str("password", api_key)?;
     println!("You are now logged in as {}", args.username);
     Ok(())
+}
+
+#[derive(Args)]
+pub struct CreateApiKeyArgs {
+    pub username: String,
+    pub password: String,
+    pub label: String,
+}
+
+pub fn create_api_key(args: &CreateApiKeyArgs) -> Result<()> {
+    rpc::call(
+        "create_api_key",
+        json!({"username": args.username, "password": args.password, "label": args.label}),
+    )?
+    .print()
 }
 
 #[derive(Args)]
