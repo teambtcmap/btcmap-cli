@@ -99,6 +99,11 @@ enum Commands {
 
     /// Custom RPC
     RPC(command::common::CustomArgs),
+
+    CreateEvent(command::event::CreateEventArgs),
+    GetEvents,
+    GetEvent(command::event::GetEventArgs),
+    DeleteEvent(command::event::DeleteEventArgs),
 }
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -191,6 +196,10 @@ fn main() -> Result<()> {
         }
         // common
         Commands::RPC(args) => command::common::rpc(args),
+        Commands::CreateEvent(args) => command::event::create_event(args),
+        Commands::GetEvents => command::event::get_events(),
+        Commands::GetEvent(args) => command::event::get_event(args),
+        Commands::DeleteEvent(args) => command::event::delete_event(args),
     }
 }
 
