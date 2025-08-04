@@ -56,6 +56,8 @@ enum Commands {
     GenerateElementCategories(GenerateElementCategoriesArgs),
 
     // Auth - https://github.com/teambtcmap/btcmap-api/blob/master/docs/rpc-api/auth.md
+    /// Sign up and get an auth token
+    Signup(command::admin::SignupArgs),
     /// Change admin password. Knowledge of an old password is required
     ChangePassword(command::admin::ChangePasswordArgs),
     /// Create API key. You need to provide your username and password, as well as a key label
@@ -63,7 +65,7 @@ enum Commands {
     /// Login with your username and password and get an auth token
     Login(command::admin::LoginArgs),
     /// Create a new admin user. New admins have no permissions by default, use add-admin-action to allow certain acitons
-    AddAdmin(command::admin::AddAdminArgs),
+    AddUser(command::admin::AddUserArgs),
     /// Allow other admin to perform a certain action. You must be super admin to use this command
     AddAdminAction(command::admin::AddAdminActionArgs),
     /// Block other admin from using a certain action. You must be super admin to use this command
@@ -171,7 +173,8 @@ fn main() -> Result<()> {
         Commands::GenerateElementIcons(args) => element::generate_element_icons(args),
         Commands::GenerateElementCategories(args) => element::generate_element_categories(args),
         // Admin
-        Commands::AddAdmin(args) => command::admin::add_admin(args),
+        Commands::Signup(args) => command::admin::sign_up(args),
+        Commands::AddUser(args) => command::admin::add_user(args),
         Commands::AddAdminAction(args) => command::admin::add_admin_action(args),
         Commands::RemoveAdminAction(args) => command::admin::remove_admin_action(args),
         Commands::GenerateInvoice(args) => command::admin::generate_invoice(args),

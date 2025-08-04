@@ -7,8 +7,10 @@ use serde_json::{json, Map, Value};
 
 #[derive(Args)]
 pub struct CreateEventArgs {
-    pub lat: i64,
-    pub lon: i64,
+    #[clap(allow_hyphen_values = true)]
+    pub lat: f64,
+    #[clap(allow_hyphen_values = true)]
+    pub lon: f64,
     pub name: String,
     pub website: String,
     pub starts_at: String,

@@ -15,7 +15,7 @@ pub fn login(args: &LoginArgs) -> Result<()> {
         json!({"username": args.username, "password": args.password, "label": args.label}),
     )?;
     let res = res.result.unwrap();
-    let api_key = res["api_key"].as_str().unwrap();
+    let api_key = res["token"].as_str().unwrap();
     settings::put_str("password", api_key)?;
     println!("You are now logged in as {}", args.username);
     Ok(())
@@ -37,16 +37,40 @@ pub fn create_api_key(args: &CreateApiKeyArgs) -> Result<()> {
 }
 
 #[derive(Args)]
-pub struct AddAdminArgs {
-    pub new_admin_name: String,
-    pub new_admin_password: String,
+pub struct AddUserArgs {
+    pub name: String,
+    pub password: String,
 }
 
-pub fn add_admin(args: &AddAdminArgs) -> Result<()> {
+pub fn add_user(args: &AddUserArgs) -> Result<()> {
     rpc::call(
-        "add_admin",
-        json!({"new_admin_name": args.new_admin_name, "new_admin_password": args.new_admin_password}),
-    )?.print()
+        "add_user",
+        json!({"name": args.name, "password": args.password}),
+    )?
+    .print()
+}
+
+#[derive(Args)]
+pub struct SignupArgs {
+    pub name: String,
+    pub password: String,
+}
+
+pub fn sign_up(args: &SignupArgs) -> Result<()> {
+    rpc::call(
+        "add_user",
+        json!({"name": args.name, "password": args.password}),
+    )?
+    .print()?;
+    let res = rpc::call(
+        "create_api_key",
+        json!({"username": args.name, "password": args.password, "label": "Created by btcmap-cli during signup"}),
+    )?;
+    let res = res.result.unwrap();
+    let api_key = res["token"].as_str().unwrap();
+    settings::put_str("password", api_key)?;
+    println!("You are now logged in as {}", args.name);
+    Ok(())
 }
 
 #[derive(Args)]
