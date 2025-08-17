@@ -136,7 +136,7 @@ fn main() -> Result<()> {
     }
 
     if settings::get_str("password")?.is_empty() {
-        Err("you need to login first, run btcmap-cli login <password>")?;
+        Err("you need to login first, run btcmap-cli login <username> <password>")?;
     }
 
     let command = match &cli.command {

@@ -6,13 +6,16 @@ use serde_json::json;
 pub struct LoginArgs {
     pub username: String,
     pub password: String,
-    pub label: String,
 }
 
 pub fn login(args: &LoginArgs) -> Result<()> {
     let res = rpc::call(
         "create_api_key",
-        json!({"username": args.username, "password": args.password, "label": args.label}),
+        json!({
+            "username": args.username,
+            "password": args.password,
+            "label": "Created by btcmap-cli"
+        }),
     )?;
     let res = res.result.unwrap();
     let api_key = res["token"].as_str().unwrap();
