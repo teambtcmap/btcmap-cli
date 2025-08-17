@@ -57,7 +57,7 @@ enum Commands {
 
     // Auth - https://github.com/teambtcmap/btcmap-api/blob/master/docs/rpc-api/auth.md
     /// Sign up and get an auth token
-    Signup(command::admin::SignupArgs),
+    Signup(command::auth::SignUpArgs),
     /// Change admin password. Knowledge of an old password is required
     ChangePassword(command::admin::ChangePasswordArgs),
     /// Create API key. You need to provide your username and password, as well as a key label
@@ -173,7 +173,7 @@ fn main() -> Result<()> {
         Commands::GenerateElementIcons(args) => element::generate_element_icons(args),
         Commands::GenerateElementCategories(args) => element::generate_element_categories(args),
         // Admin
-        Commands::Signup(args) => command::admin::sign_up(args),
+        Commands::Signup(args) => command::auth::sign_up(args),
         Commands::AddUser(args) => command::admin::add_user(args),
         Commands::AddAdminAction(args) => command::admin::add_admin_action(args),
         Commands::RemoveAdminAction(args) => command::admin::remove_admin_action(args),

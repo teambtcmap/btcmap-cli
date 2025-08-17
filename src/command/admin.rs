@@ -61,29 +61,6 @@ pub fn add_user(args: &AddUserArgs) -> Result<()> {
 }
 
 #[derive(Args)]
-pub struct SignupArgs {
-    pub name: String,
-    pub password: String,
-}
-
-pub fn sign_up(args: &SignupArgs) -> Result<()> {
-    rpc::call(
-        "add_user",
-        json!({"name": args.name, "password": args.password}),
-    )?
-    .print()?;
-    let res = rpc::call(
-        "create_api_key",
-        json!({"username": args.name, "password": args.password, "label": "Created by btcmap-cli during signup"}),
-    )?;
-    let res = res.result.unwrap();
-    let api_key = res["token"].as_str().unwrap();
-    settings::put_str("password", api_key)?;
-    println!("You are now logged in as {}", args.name);
-    Ok(())
-}
-
-#[derive(Args)]
 pub struct ChangePasswordArgs {
     pub username: String,
     pub old_password: String,

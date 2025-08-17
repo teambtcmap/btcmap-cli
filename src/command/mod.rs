@@ -1,5 +1,6 @@
 pub mod admin;
 pub mod area;
+pub mod auth;
 pub mod common;
 pub mod element;
 pub mod event;
