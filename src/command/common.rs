@@ -1,6 +1,6 @@
 use crate::{rpc, Result};
 use clap::Args;
-use serde_json::json;
+use serde_json::{json, Map, Value};
 
 #[derive(Args)]
 pub struct SearchArgs {
@@ -14,9 +14,13 @@ pub fn search(args: &SearchArgs) -> Result<()> {
 #[derive(Args)]
 pub struct CustomArgs {
     pub method: String,
-    pub params: String,
+    pub params: Option<String>,
 }
 
 pub fn rpc(args: &CustomArgs) -> Result<()> {
-    rpc::call(&args.method, serde_json::from_str(&args.params)?)?.print()
+    let params: Value = match &args.params {
+        Some(params) => serde_json::from_str(&params)?,
+        None => Value::Object(Map::new()),
+    };
+    rpc::call(&args.method, params)?.print()
 }
