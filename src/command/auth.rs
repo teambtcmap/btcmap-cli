@@ -1,4 +1,4 @@
-use crate::{rpc, settings, Result};
+use crate::{rpc, settings, verbosity, Result};
 use clap::Args;
 use serde_json::json;
 
@@ -9,11 +9,18 @@ pub struct SignUpArgs {
 }
 
 pub fn sign_up(args: &SignUpArgs) -> Result<()> {
-    rpc::call(
+    let add_user_response = rpc::call(
         "add_user",
         json!({"name": args.name, "password": args.password}),
-    )?
-    .print()?;
+    )?;
+    if add_user_response.error.is_some() {
+        if verbosity() == 0 {
+            eprintln!("Login failed, use verbose mode to see more details");
+        } else {
+            eprintln!("Login failed")
+        }
+        return Ok(());
+    }
     let res = rpc::call(
         "create_api_key",
         json!({"username": args.name, "password": args.password, "label": "Created by btcmap-cli during signup"}),
