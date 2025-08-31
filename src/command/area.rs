@@ -63,16 +63,6 @@ pub fn set_area_icon(args: &SetAreaIconArgs) -> Result<()> {
     .print()
 }
 
-#[derive(Args)]
-pub struct GenerateAreasElementsMappingArgs {
-    pub from_element_id: i64,
-    pub to_element_id: i64,
-}
-
-pub fn generate_areas_elements_mapping(args: &GenerateAreasElementsMappingArgs) -> Result<()> {
-    rpc::call(
-        "generate_areas_elements_mapping",
-        json!({"from_element_id": args.from_element_id,"to_element_id": args.to_element_id}),
-    )?
-    .print()
+pub fn generate_areas_elements_mapping() -> Result<()> {
+    rpc::call("generate_areas_elements_mapping", json!({}))?.print()
 }

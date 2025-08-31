@@ -87,7 +87,7 @@ enum Commands {
     /// Set icon to a certain area. You can use either numeric id or a string alias (th). Icon needs to be base64-encoded, and you also need to provide file extension
     SetAreaIcon(command::area::SetAreaIconArgs),
     /// Ensure that elements and areas are correctly mapped to each other. You need to provide element id range in order to operate on a specific slice of elements
-    GenerateAreasElementsMapping(command::area::GenerateAreasElementsMappingArgs),
+    GenerateAreasElementsMapping,
     /// Fetch the latest user actions. You need to provide OSM username and the number of latest entries you are interested in
     GetUserActivity(command::user::GetUserActivityArgs),
     /// Generate daily reports. It will skip report generation if current date is already covered
@@ -106,6 +106,9 @@ enum Commands {
     GetEvents,
     GetEvent(command::event::GetEventArgs),
     DeleteEvent(command::event::DeleteEventArgs),
+
+    /// Generate montly activity report. We use it as a data source in our monthly reports
+    GetReport(command::common::GetReportArgs),
 }
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -187,7 +190,7 @@ fn main() -> Result<()> {
         Commands::SetAreaTag(args) => area::set_area_tag(args),
         Commands::RemoveAreaTag(args) => area::remove_area_tag(args),
         Commands::SetAreaIcon(args) => area::set_area_icon(args),
-        Commands::GenerateAreasElementsMapping(args) => area::generate_areas_elements_mapping(args),
+        Commands::GenerateAreasElementsMapping => area::generate_areas_elements_mapping(),
         // User
         Commands::GetUserActivity(args) => command::user::get_user_activity(args),
         // Report
@@ -203,6 +206,7 @@ fn main() -> Result<()> {
         Commands::GetEvents => command::event::get_events(),
         Commands::GetEvent(args) => command::event::get_event(args),
         Commands::DeleteEvent(args) => command::event::delete_event(args),
+        Commands::GetReport(args) => command::common::get_report(args),
     }
 }
 

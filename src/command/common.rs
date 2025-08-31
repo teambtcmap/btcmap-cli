@@ -12,6 +12,18 @@ pub fn search(args: &SearchArgs) -> Result<()> {
 }
 
 #[derive(Args)]
+pub struct GetReportArgs {
+    #[arg(long)]
+    pub start: String,
+    #[arg(long)]
+    pub end: String,
+}
+
+pub fn get_report(args: &GetReportArgs) -> Result<()> {
+    rpc::call("get_report", json!({"start": args.start, "end": args.end}))?.print()
+}
+
+#[derive(Args)]
 pub struct CustomArgs {
     pub method: String,
     pub params: Option<String>,
