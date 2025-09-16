@@ -109,6 +109,13 @@ enum Commands {
 
     /// Generate montly activity report. We use it as a data source in our monthly reports
     GetReport(command::common::GetReportArgs),
+
+    /// Submit new place to BTC Map. Place submissions are processed manually, so use catiously and prefer direct OSM merge.
+    SubmitPlace(command::import::SubmitPlaceArgs),
+    /// Fetch processing/processed submission to look up all the details.
+    GetSubmittedPlace(command::import::GetSubmittedPlaceArgs),
+    /// Revoke previously submitted place.
+    RevokeSubmittedPlace(command::import::RevokeSubmittedPlaceArgs),
 }
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -207,6 +214,10 @@ fn main() -> Result<()> {
         Commands::GetEvent(args) => command::event::get_event(args),
         Commands::DeleteEvent(args) => command::event::delete_event(args),
         Commands::GetReport(args) => command::common::get_report(args),
+        // import
+        Commands::SubmitPlace(args) => command::import::submit_place(args),
+        Commands::GetSubmittedPlace(args) => command::import::get_submitted_place(args),
+        Commands::RevokeSubmittedPlace(args) => command::import::revoke_submitted_place(args),
     }
 }
 

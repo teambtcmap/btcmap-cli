@@ -4,6 +4,7 @@ pub mod auth;
 pub mod common;
 pub mod element;
 pub mod event;
+pub mod import;
 pub mod report;
 pub mod setup;
 pub mod user;
