@@ -47,6 +47,17 @@ pub fn create_api_key(args: &CreateApiKeyArgs) -> Result<()> {
 }
 
 #[derive(Args)]
+pub struct SetApiKeyArgs {
+    pub api_key: String,
+}
+
+pub fn set_api_key(args: &SetApiKeyArgs) -> Result<()> {
+    settings::put_str("password", &args.api_key)?;
+    println!("api key has been updated");
+    Ok(())
+}
+
+#[derive(Args)]
 pub struct AddUserArgs {
     pub name: String,
     pub password: String,

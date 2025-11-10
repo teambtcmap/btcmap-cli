@@ -18,7 +18,7 @@ pub struct CreateEventArgs {
     #[arg(long)]
     pub website: String,
     #[arg(long = "starts-at")]
-    pub starts_at: String,
+    pub starts_at: Option<String>,
     #[arg(long = "ends-at")]
     pub ends_at: Option<String>,
 }
