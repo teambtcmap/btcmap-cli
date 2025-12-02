@@ -118,6 +118,8 @@ enum Commands {
     RevokeSubmittedPlace(command::import::RevokeSubmittedPlaceArgs),
 
     SetApiKey(command::admin::SetApiKeyArgs),
+
+    SendMatrixMessage(command::matrix::SendMatrixMessageArgs),
 }
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
@@ -125,7 +127,7 @@ type Result<T> = std::result::Result<T, Box<dyn Error>>;
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    std::env::set_var("VERBOSITY", cli.verbose.to_string());
+    unsafe { std::env::set_var("VERBOSITY", cli.verbose.to_string()) };
 
     if let Some(Commands::SetServer(args)) = &cli.command {
         return command::setup::set_server(args);
@@ -222,6 +224,8 @@ fn main() -> Result<()> {
         Commands::RevokeSubmittedPlace(args) => command::import::revoke_submitted_place(args),
 
         Commands::SetApiKey(args) => command::admin::set_api_key(args),
+
+        Commands::SendMatrixMessage(args) => command::matrix::send_matrix_message(args),
     }
 }
 
