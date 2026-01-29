@@ -115,14 +115,14 @@ pub fn remove_admin_action(args: &RemoveAdminActionArgs) -> Result<()> {
 }
 
 #[derive(Args)]
-pub struct GenerateInvoiceArgs {
+pub struct CreateInvoiceArgs {
     pub amount_sats: i64,
     pub description: String,
 }
 
-pub fn generate_invoice(args: &GenerateInvoiceArgs) -> Result<()> {
+pub fn create_invoice(args: &CreateInvoiceArgs) -> Result<()> {
     rpc::call(
-        "generate_invoice",
+        "create_invoice",
         json!({"amount_sats": args.amount_sats, "description": args.description}),
     )?
     .print()

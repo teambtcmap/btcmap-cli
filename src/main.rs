@@ -70,8 +70,8 @@ enum Commands {
     AddAdminAction(command::admin::AddAdminActionArgs),
     /// Block other admin from using a certain action. You must be super admin to use this command
     RemoveAdminAction(command::admin::RemoveAdminActionArgs),
-    /// Generate invoice
-    GenerateInvoice(command::admin::GenerateInvoiceArgs),
+    /// Create invoice
+    CreateInvoice(command::admin::CreateInvoiceArgs),
     /// Sync unpaid invoices
     SyncUnpaidInvoices(command::admin::SyncUnpaidInvoicesArgs),
     /// Get invoice details, you only need to pass invoice ID (integer)
@@ -191,7 +191,7 @@ fn main() -> Result<()> {
         Commands::AddUser(args) => command::admin::add_user(args),
         Commands::AddAdminAction(args) => command::admin::add_admin_action(args),
         Commands::RemoveAdminAction(args) => command::admin::remove_admin_action(args),
-        Commands::GenerateInvoice(args) => command::admin::generate_invoice(args),
+        Commands::CreateInvoice(args) => command::admin::create_invoice(args),
         Commands::SyncUnpaidInvoices(args) => command::admin::sync_unpaid_invoices(args),
         Commands::GetInvoice(args) => command::admin::get_invoice(args),
         // Common
