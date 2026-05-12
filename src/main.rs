@@ -98,6 +98,10 @@ enum Commands {
     GetTrendingCommunities(command::report::GetTrendingCommunitiesArgs),
     /// Find which countries had the most comments during a certain time period. Arguemnts should be valid ISO dates (example: 2024-09-10)
     GetMostCommentedCountries(command::report::GetMostCommentedCountriesArgs),
+    /// Get daily infrastructure report containing request statistics, unique IP counts, platform breakdowns, and top user agents
+    GetDailyInfraReport(command::report::GetDailyInfraReportArgs),
+    /// Get top clients report grouped by platform over the last 24 hours
+    GetTopClients(command::report::GetTopClientsArgs),
 
     /// Custom RPC
     RPC(command::common::CustomArgs),
@@ -211,6 +215,8 @@ fn main() -> Result<()> {
         Commands::GetMostCommentedCountries(args) => {
             command::report::get_most_commented_countries(args)
         }
+        Commands::GetDailyInfraReport(args) => command::report::get_daily_infra_report(args),
+        Commands::GetTopClients(args) => command::report::get_top_clients(args),
         // common
         Commands::RPC(args) => command::common::rpc(args),
         Commands::CreateEvent(args) => command::event::create_event(args),

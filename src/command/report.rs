@@ -50,3 +50,17 @@ pub fn get_most_commented_countries(args: &GetMostCommentedCountriesArgs) -> Res
     )?
     .print()
 }
+
+#[derive(Args)]
+pub struct GetDailyInfraReportArgs {}
+
+pub fn get_daily_infra_report(_: &GetDailyInfraReportArgs) -> Result<()> {
+    rpc::call("get_daily_infra_report", json!({}))?.print()
+}
+
+#[derive(Args)]
+pub struct GetTopClientsArgs {}
+
+pub fn get_top_clients(_: &GetTopClientsArgs) -> Result<()> {
+    rpc::call("get_top_clients", json!({}))?.print()
+}
