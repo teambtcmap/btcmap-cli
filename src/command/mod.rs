@@ -2,6 +2,7 @@ pub mod admin;
 pub mod area;
 pub mod auth;
 pub mod common;
+pub mod dashboard;
 pub mod element;
 pub mod event;
 pub mod import;

@@ -103,6 +103,11 @@ enum Commands {
     /// Get top clients report grouped by platform over the last 24 hours
     GetTopClients(command::report::GetTopClientsArgs),
 
+    /// Fetch the admin analytics dashboard with place and log statistics
+    GetDashboard,
+    /// Fetch the dashboard for a specific area, including element counts and 365-day charts
+    GetAreaDashboard(command::dashboard::GetAreaDashboardArgs),
+
     /// Custom RPC
     RPC(command::common::CustomArgs),
 
@@ -217,6 +222,9 @@ fn main() -> Result<()> {
         }
         Commands::GetDailyInfraReport(args) => command::report::get_daily_infra_report(args),
         Commands::GetTopClients(args) => command::report::get_top_clients(args),
+        // Dashboard
+        Commands::GetDashboard => command::dashboard::get_dashboard(),
+        Commands::GetAreaDashboard(args) => command::dashboard::get_area_dashboard(args),
         // common
         Commands::RPC(args) => command::common::rpc(args),
         Commands::CreateEvent(args) => command::event::create_event(args),
