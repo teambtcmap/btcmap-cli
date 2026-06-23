@@ -51,7 +51,7 @@ pub fn sign_in(args: &SignInArgs) -> Result<()> {
     }
     let response = rpc::call("signin", params)?;
     if let Some(result) = response.result {
-        let api_key = result["token"].as_str().unwrap().to_string();
+        let api_key = result["api_key"].as_str().unwrap().to_string();
         settings::put_str("password", &api_key)?;
         println!("You are now logged in as {}", args.username);
     } else if verbosity() == 0 {
