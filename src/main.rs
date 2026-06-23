@@ -55,17 +55,18 @@ enum Commands {
     /// Generate category tags for a specific element id range
     GenerateElementCategories(GenerateElementCategoriesArgs),
 
-    // Auth - https://github.com/teambtcmap/btcmap-api/blob/master/docs/rpc-api/auth.md
-    /// Sign up and get an auth token
+    /// Sign up with your username and password and get an auth token
     Signup(command::auth::SignUpArgs),
-    /// Change admin password. Knowledge of an old password is required
-    ChangePassword(command::admin::ChangePasswordArgs),
-    /// Create API key. You need to provide your username and password, as well as a key label
-    CreateApiKey(command::admin::CreateApiKeyArgs),
-    /// Login with your username and password and get an auth token
-    Login(command::admin::LoginArgs),
-    /// Create a new admin user. New admins have no permissions by default, use add-admin-action to allow certain acitons
-    AddUser(command::admin::AddUserArgs),
+    /// Sign in with your username and password and get an auth token
+    Signin(command::auth::SignInArgs),
+    /// Change account password. Knowledge of the old password is required
+    ChangePassword(command::auth::ChangePasswordArgs),
+    /// List all API keys associated with the authorized user. Secrets are never returned
+    GetApiKeys(command::auth::GetApiKeysArgs),
+    /// Revoke an API key by its id. Use this to remove keys you no longer need or suspect to be exposed
+    RevokeApiKey(command::auth::RevokeApiKeyArgs),
+    /// Return the account name and roles of the authorized user
+    Whoami(command::auth::WhoAmIArgs),
     /// Allow other admin to perform a certain action. You must be super admin to use this command
     AddAdminAction(command::admin::AddAdminActionArgs),
     /// Block other admin from using a certain action. You must be super admin to use this command
@@ -129,7 +130,8 @@ enum Commands {
     SetApiKey(command::admin::SetApiKeyArgs),
 
     SendMatrixMessage(command::matrix::SendMatrixMessageArgs),
-}
+
+    }
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
@@ -143,15 +145,15 @@ fn main() -> Result<()> {
     }
 
     if let Some(Commands::ChangePassword(args)) = &cli.command {
-        return command::admin::change_password(args);
+        return command::auth::change_password(args);
     }
 
-    if let Some(Commands::Login(args)) = &cli.command {
-        return command::admin::login(args);
+    if let Some(Commands::Signin(args)) = &cli.command {
+        return command::auth::sign_in(args);
     }
 
-    if let Some(Commands::CreateApiKey(args)) = &cli.command {
-        return command::admin::create_api_key(args);
+    if let Some(Commands::Signup(args)) = &cli.command {
+        return command::auth::sign_up(args);
     }
 
     if let Some(Commands::State(args)) = &cli.command {
@@ -159,7 +161,7 @@ fn main() -> Result<()> {
     }
 
     if settings::get_str("password")?.is_empty() {
-        Err("you need to login first, run btcmap-cli login <username> <password>")?;
+        Err("you need to sign in first, run btcmap-cli signin <username> <password>")?;
     }
 
     let command = match &cli.command {
@@ -170,8 +172,8 @@ fn main() -> Result<()> {
     match command {
         // Setup
         Commands::SetServer(_) => Err("supposed to be unreachable".into()),
-        Commands::Login(_) => Err("supposed to be unreachable".into()),
-        Commands::CreateApiKey(_) => Err("supposed to be unreachable".into()),
+        Commands::Signin(_) => Err("supposed to be unreachable".into()),
+        Commands::Signup(_) => Err("supposed to be unreachable".into()),
         Commands::State(_) => Err("supposed to be unreachable".into()),
         Commands::ChangePassword(_) => Err("supposed to be unreachable".into()),
         // Element
@@ -195,9 +197,11 @@ fn main() -> Result<()> {
         Commands::SyncElements(args) => element::sync_elements(args),
         Commands::GenerateElementIcons(args) => element::generate_element_icons(args),
         Commands::GenerateElementCategories(args) => element::generate_element_categories(args),
+        // Auth
+        Commands::GetApiKeys(args) => command::auth::get_api_keys(args),
+        Commands::RevokeApiKey(args) => command::auth::revoke_api_key(args),
+        Commands::Whoami(args) => command::auth::whoami(args),
         // Admin
-        Commands::Signup(args) => command::auth::sign_up(args),
-        Commands::AddUser(args) => command::admin::add_user(args),
         Commands::AddAdminAction(args) => command::admin::add_admin_action(args),
         Commands::RemoveAdminAction(args) => command::admin::remove_admin_action(args),
         Commands::CreateInvoice(args) => command::admin::create_invoice(args),

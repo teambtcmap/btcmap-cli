@@ -20,16 +20,16 @@ chmod +x btcmap-cli
 sudo mv btcmap-cli /usr/local/bin/
 ````
 
-4. Sign up or log in
+4. Sign up or sign in
 
 ```bash
-btcmap-cli signup <username> <password>
+btcmap-cli signup --user <username> --password <password>
 ```
 
 or
 
 ```bash
-btcmap-cli login <username> <password>
+btcmap-cli signin <username> <password>
 ```
 
 5. Check `help` to see all available actions

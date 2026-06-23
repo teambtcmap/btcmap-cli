@@ -1,50 +1,6 @@
-use crate::{rpc, settings, verbosity, Result};
+use crate::{rpc, settings, Result};
 use clap::Args;
 use serde_json::json;
-
-#[derive(Args)]
-pub struct LoginArgs {
-    pub username: String,
-    pub password: String,
-}
-
-pub fn login(args: &LoginArgs) -> Result<()> {
-    let response = rpc::call(
-        "create_api_key",
-        json!({
-            "username": args.username,
-            "password": args.password,
-            "label": "Created by btcmap-cli"
-        }),
-    )?;
-    if let Some(result) = response.result {
-        let api_key = result["token"].as_str().unwrap();
-        settings::put_str("password", api_key)?;
-        println!("You are now logged in as {}", args.username);
-    } else {
-        if verbosity() == 0 {
-            eprintln!("Login failed, use verbose mode to see more details");
-        } else {
-            eprintln!("Login failed")
-        }
-    }
-    Ok(())
-}
-
-#[derive(Args)]
-pub struct CreateApiKeyArgs {
-    pub username: String,
-    pub password: String,
-    pub label: String,
-}
-
-pub fn create_api_key(args: &CreateApiKeyArgs) -> Result<()> {
-    rpc::call(
-        "create_api_key",
-        json!({"username": args.username, "password": args.password, "label": args.label}),
-    )?
-    .print()
-}
 
 #[derive(Args)]
 pub struct SetApiKeyArgs {
@@ -55,35 +11,6 @@ pub fn set_api_key(args: &SetApiKeyArgs) -> Result<()> {
     settings::put_str("password", &args.api_key)?;
     println!("api key has been updated");
     Ok(())
-}
-
-#[derive(Args)]
-pub struct AddUserArgs {
-    pub name: String,
-    pub password: String,
-}
-
-pub fn add_user(args: &AddUserArgs) -> Result<()> {
-    rpc::call(
-        "add_user",
-        json!({"name": args.name, "password": args.password}),
-    )?
-    .print()
-}
-
-#[derive(Args)]
-pub struct ChangePasswordArgs {
-    pub username: String,
-    pub old_password: String,
-    pub new_password: String,
-}
-
-pub fn change_password(args: &ChangePasswordArgs) -> Result<()> {
-    rpc::call(
-        "change_password",
-        json!({"username": args.username, "old_password": args.old_password, "new_password": args.new_password}),
-    )?
-    .print()
 }
 
 #[derive(Args)]
