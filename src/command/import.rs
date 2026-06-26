@@ -1,6 +1,10 @@
 use crate::{rpc, Result};
 use clap::Args;
-use serde_json::json;
+use serde_json::{json, Map, Value};
+
+pub fn list_origins() -> Result<()> {
+    rpc::call("get_place_import_origins", Value::Object(Map::new()))?.print()
+}
 
 #[derive(Args)]
 pub struct SubmitPlaceArgs {

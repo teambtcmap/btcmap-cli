@@ -24,6 +24,8 @@ mod sections {
         GetApiKeys(command::auth::GetApiKeysArgs),
         /// Revoke an API key by its id. Use this to remove keys you no longer need or suspect to be exposed
         RevokeApiKey(command::auth::RevokeApiKeyArgs),
+        /// Revoke the API key used to call this command. Idempotent: signing out with an already-revoked key returns the same response
+        SignOut(command::auth::SignOutArgs),
         /// Return the account name and roles of the authorized user
         Whoami(command::auth::WhoAmIArgs),
     }
@@ -127,13 +129,15 @@ mod sections {
     }
 
     #[derive(Subcommand)]
-    pub enum Import {
+    pub enum PlaceImport {
         /// Submit new place to BTC Map. Place submissions are processed manually, so use catiously and prefer direct OSM merge.
         SubmitPlace(command::import::SubmitPlaceArgs),
         /// Fetch processing/processed submission to look up all the details.
         GetSubmittedPlace(command::import::GetSubmittedPlaceArgs),
         /// Revoke previously submitted place.
         RevokeSubmittedPlace(command::import::RevokeSubmittedPlaceArgs),
+        /// List every import origin currently configured on the server.
+        ListOrigins,
     }
 
     #[derive(Subcommand)]
@@ -213,8 +217,8 @@ fn build_cli() -> Command {
             "event",
             "Server events",
         )))
-        .subcommand(sections::Import::augment_subcommands(section(
-            "import",
+        .subcommand(sections::PlaceImport::augment_subcommands(section(
+            "place-import",
             "Place submission and review",
         )))
         .subcommand(sections::Setup::augment_subcommands(section(
@@ -282,6 +286,7 @@ fn dispatch(section: &str, sub_matches: &ArgMatches) -> Result<()> {
         "auth" => match sections::Auth::from_arg_matches(sub_matches)? {
             sections::Auth::GetApiKeys(args) => command::auth::get_api_keys(&args),
             sections::Auth::RevokeApiKey(args) => command::auth::revoke_api_key(&args),
+            sections::Auth::SignOut(args) => command::auth::sign_out(&args),
             sections::Auth::Whoami(args) => command::auth::whoami(&args),
             sections::Auth::Signup(_)
             | sections::Auth::Signin(_)
@@ -306,7 +311,9 @@ fn dispatch(section: &str, sub_matches: &ArgMatches) -> Result<()> {
             sections::Element::PaywallAddElementComment(args) => {
                 element::paywall_add_element_comment(&args)
             }
-            sections::Element::GenerateElementIssues(args) => element::generate_element_issues(&args),
+            sections::Element::GenerateElementIssues(args) => {
+                element::generate_element_issues(&args)
+            }
             sections::Element::SyncElements(args) => element::sync_elements(&args),
             sections::Element::GenerateElementIcons(args) => element::generate_element_icons(&args),
             sections::Element::GenerateElementCategories(args) => {
@@ -324,7 +331,9 @@ fn dispatch(section: &str, sub_matches: &ArgMatches) -> Result<()> {
             sections::Admin::AddAdminAction(args) => command::admin::add_admin_action(&args),
             sections::Admin::RemoveAdminAction(args) => command::admin::remove_admin_action(&args),
             sections::Admin::CreateInvoice(args) => command::admin::create_invoice(&args),
-            sections::Admin::SyncUnpaidInvoices(args) => command::admin::sync_unpaid_invoices(&args),
+            sections::Admin::SyncUnpaidInvoices(args) => {
+                command::admin::sync_unpaid_invoices(&args)
+            }
             sections::Admin::GetInvoice(args) => command::admin::get_invoice(&args),
             sections::Admin::SetApiKey(args) => command::admin::set_api_key(&args),
         },
@@ -357,12 +366,15 @@ fn dispatch(section: &str, sub_matches: &ArgMatches) -> Result<()> {
             sections::Event::GetEvent(args) => command::event::get_event(&args),
             sections::Event::DeleteEvent(args) => command::event::delete_event(&args),
         },
-        "import" => match sections::Import::from_arg_matches(sub_matches)? {
-            sections::Import::SubmitPlace(args) => command::import::submit_place(&args),
-            sections::Import::GetSubmittedPlace(args) => command::import::get_submitted_place(&args),
-            sections::Import::RevokeSubmittedPlace(args) => {
+        "place-import" => match sections::PlaceImport::from_arg_matches(sub_matches)? {
+            sections::PlaceImport::SubmitPlace(args) => command::import::submit_place(&args),
+            sections::PlaceImport::GetSubmittedPlace(args) => {
+                command::import::get_submitted_place(&args)
+            }
+            sections::PlaceImport::RevokeSubmittedPlace(args) => {
                 command::import::revoke_submitted_place(&args)
             }
+            sections::PlaceImport::ListOrigins => command::import::list_origins(),
         },
         "setup" => match sections::Setup::from_arg_matches(sub_matches)? {
             sections::Setup::SetServer(_) | sections::Setup::State(_) => {
@@ -373,7 +385,9 @@ fn dispatch(section: &str, sub_matches: &ArgMatches) -> Result<()> {
             sections::User::GetUserActivity(args) => command::user::get_user_activity(&args),
         },
         "matrix" => match sections::Matrix::from_arg_matches(sub_matches)? {
-            sections::Matrix::SendMatrixMessage(args) => command::matrix::send_matrix_message(&args),
+            sections::Matrix::SendMatrixMessage(args) => {
+                command::matrix::send_matrix_message(&args)
+            }
         },
         "common" => match sections::Common::from_arg_matches(sub_matches)? {
             sections::Common::Search(args) => command::common::search(&args),

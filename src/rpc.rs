@@ -30,6 +30,14 @@ impl RpcResponse {
 }
 
 pub fn call(method: &str, params: Value) -> Result<RpcResponse> {
+    call_with_auth(method, params, true)
+}
+
+pub fn call_anon(method: &str, params: Value) -> Result<RpcResponse> {
+    call_with_auth(method, params, false)
+}
+
+fn call_with_auth(method: &str, params: Value, with_auth: bool) -> Result<RpcResponse> {
     match verbosity() {
         i64::MIN..=0 => {}
         1..=i64::MAX => {
@@ -57,15 +65,14 @@ pub fn call(method: &str, params: Value) -> Result<RpcResponse> {
             serde_json::to_string(&req_body)?.to_colored_json_auto()?
         );
     }
-    let response: RpcResponse = ureq::post(api_url)
-        .header("Content-Type", "application/json")
-        .header(
+    let mut request = ureq::post(api_url).header("Content-Type", "application/json");
+    if with_auth {
+        request = request.header(
             "Authorization",
             format!("Bearer {}", settings::get_str("password")?),
-        )
-        .send_json(req_body)?
-        .body_mut()
-        .read_json()?;
+        );
+    }
+    let response: RpcResponse = request.send_json(req_body)?.body_mut().read_json()?;
     match verbosity() {
         i64::MIN..=0 => {}
         1..=2 => {
