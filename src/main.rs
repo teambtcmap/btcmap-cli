@@ -74,6 +74,8 @@ mod sections {
         SetAreaIcon(command::area::SetAreaIconArgs),
         /// Ensure that elements and areas are correctly mapped to each other. You need to provide element id range in order to operate on a specific slice of elements
         GenerateAreasElementsMapping,
+        /// Download and cache every area icon referenced by the icon:square tag, reporting how many URLs were tried, how many images were inserted, and how many were already identical to the cached copy
+        GenerateAreaIcons,
     }
 
     #[derive(Subcommand)]
@@ -326,6 +328,7 @@ fn dispatch(section: &str, sub_matches: &ArgMatches) -> Result<()> {
             sections::Area::RemoveAreaTag(args) => area::remove_area_tag(&args),
             sections::Area::SetAreaIcon(args) => area::set_area_icon(&args),
             sections::Area::GenerateAreasElementsMapping => area::generate_areas_elements_mapping(),
+            sections::Area::GenerateAreaIcons => area::generate_area_icons(),
         },
         "admin" => match sections::Admin::from_arg_matches(sub_matches)? {
             sections::Admin::AddAdminAction(args) => command::admin::add_admin_action(&args),

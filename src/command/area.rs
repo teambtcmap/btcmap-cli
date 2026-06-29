@@ -66,3 +66,7 @@ pub fn set_area_icon(args: &SetAreaIconArgs) -> Result<()> {
 pub fn generate_areas_elements_mapping() -> Result<()> {
     rpc::call("generate_areas_elements_mapping", json!({}))?.print()
 }
+
+pub fn generate_area_icons() -> Result<()> {
+    rpc::call("generate_area_icons", json!({}))?.print()
+}
