@@ -49,16 +49,25 @@ pub fn remove_area_tag(args: &RemoveAreaTagArgs) -> Result<()> {
 }
 
 #[derive(Args)]
-pub struct SetAreaIconArgs {
-    pub id: String,
-    pub icon_base64: String,
-    pub icon_ext: String,
+pub struct SetAreaImageArgs {
+    #[arg(long)]
+    pub area: String,
+    #[arg(long, default_value = "square")]
+    pub r#type: String,
+    #[arg(long)]
+    pub image: String,
 }
 
-pub fn set_area_icon(args: &SetAreaIconArgs) -> Result<()> {
+pub fn set_area_image(args: &SetAreaImageArgs) -> Result<()> {
+    let bytes = std::fs::read(&args.image)?;
+    let image_base64 = base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &bytes);
     rpc::call(
-        "set_area_icon",
-        json!({"id": args.id,"icon_base64": args.icon_base64,"icon_ext": args.icon_ext}),
+        "set_area_image",
+        json!({
+            "area_id": args.area,
+            "image_base64": image_base64,
+            "image_type": args.r#type,
+        }),
     )?
     .print()
 }

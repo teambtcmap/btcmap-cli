@@ -70,8 +70,8 @@ mod sections {
         SetAreaTag(command::area::SetAreaTagArgs),
         /// Remove tag from a certain area. You can use either numeric id or a string alias (th)
         RemoveAreaTag(command::area::RemoveAreaTagArgs),
-        /// Set icon to a certain area. You can use either numeric id or a string alias (th). Icon needs to be base64-encoded, and you also need to provide file extension
-        SetAreaIcon(command::area::SetAreaIconArgs),
+        /// Set an image for an area. You can use either numeric id or a string alias. The image file is read from disk; its format is auto-detected server-side
+        SetAreaImage(command::area::SetAreaImageArgs),
         /// Ensure that elements and areas are correctly mapped to each other. You need to provide element id range in order to operate on a specific slice of elements
         GenerateAreasElementsMapping,
         /// Download and cache every area icon referenced by the icon:square tag, reporting how many URLs were tried, how many images were inserted, and how many were already identical to the cached copy
@@ -326,7 +326,7 @@ fn dispatch(section: &str, sub_matches: &ArgMatches) -> Result<()> {
             sections::Area::GetArea(args) => area::get_area(&args),
             sections::Area::SetAreaTag(args) => area::set_area_tag(&args),
             sections::Area::RemoveAreaTag(args) => area::remove_area_tag(&args),
-            sections::Area::SetAreaIcon(args) => area::set_area_icon(&args),
+            sections::Area::SetAreaImage(args) => area::set_area_image(&args),
             sections::Area::GenerateAreasElementsMapping => area::generate_areas_elements_mapping(),
             sections::Area::GenerateAreaIcons => area::generate_area_icons(),
         },
