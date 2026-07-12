@@ -123,7 +123,7 @@ mod sections {
     pub enum Event {
         CreateEvent(command::event::CreateEventArgs),
         /// Get all events
-        GetEvents,
+        GetEvents(command::event::GetEventsArgs),
         /// Get event by id
         GetEvent(command::event::GetEventArgs),
         /// Delete event by id
@@ -365,7 +365,7 @@ fn dispatch(section: &str, sub_matches: &ArgMatches) -> Result<()> {
         },
         "event" => match sections::Event::from_arg_matches(sub_matches)? {
             sections::Event::CreateEvent(args) => command::event::create_event(&args),
-            sections::Event::GetEvents => command::event::get_events(),
+            sections::Event::GetEvents(args) => command::event::get_events(&args),
             sections::Event::GetEvent(args) => command::event::get_event(&args),
             sections::Event::DeleteEvent(args) => command::event::delete_event(&args),
         },

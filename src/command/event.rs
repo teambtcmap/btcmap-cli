@@ -21,6 +21,8 @@ pub struct CreateEventArgs {
     pub starts_at: Option<String>,
     #[arg(long = "ends-at")]
     pub ends_at: Option<String>,
+    #[arg(long = "cron-schedule")]
+    pub cron_schedule: Option<String>,
 }
 
 pub fn create_event(args: &CreateEventArgs) -> Result<()> {
@@ -30,13 +32,25 @@ pub fn create_event(args: &CreateEventArgs) -> Result<()> {
         "name": args.name,
         "website": args.website,
         "starts_at": args.starts_at,
-        "ends_at": args.ends_at
+        "ends_at": args.ends_at,
+        "cron_schedule": args.cron_schedule,
     });
     rpc::call("create_event", params)?.print()
 }
 
-pub fn get_events() -> Result<()> {
-    rpc::call("get_events", Value::Object(Map::new()))?.print()
+#[derive(Args)]
+pub struct GetEventsArgs {
+    #[arg(long)]
+    pub include_past: bool,
+    #[arg(long)]
+    pub include_deleted: bool,
+}
+
+pub fn get_events(args: &GetEventsArgs) -> Result<()> {
+    let mut params = Map::new();
+    params.insert("include_past".into(), Value::Bool(args.include_past));
+    params.insert("include_deleted".into(), Value::Bool(args.include_deleted));
+    rpc::call("get_events", Value::Object(params))?.print()
 }
 
 #[derive(Args)]
