@@ -11,6 +11,10 @@ pub fn search(args: &SearchArgs) -> Result<()> {
     rpc::call("search", json!({"query": args.query}))?.print()
 }
 
+pub fn search_typed(args: &SearchArgs, search_type: &str) -> Result<()> {
+    rpc::call("search", json!({"query": args.query, "type": search_type}))?.print()
+}
+
 #[derive(Args)]
 pub struct GetReportArgs {
     #[arg(long)]

@@ -163,9 +163,19 @@ mod sections {
     }
 
     #[derive(Subcommand)]
+    pub enum Search {
+        /// Search across all sources (areas, places, events) for the given query
+        All(command::common::SearchArgs),
+        /// Search areas only
+        Area(command::common::SearchArgs),
+        /// Search places only
+        Place(command::common::SearchArgs),
+        /// Search events only
+        Event(command::common::SearchArgs),
+    }
+
+    #[derive(Subcommand)]
     pub enum Common {
-        /// Return all entities matching provided search query. Currently, only areas are returned
-        Search(command::common::SearchArgs),
         /// Custom RPC
         RPC(command::common::CustomArgs),
     }
@@ -234,6 +244,10 @@ fn build_cli() -> Command {
         .subcommand(sections::Matrix::augment_subcommands(section(
             "matrix",
             "Matrix messaging",
+        )))
+        .subcommand(sections::Search::augment_subcommands(section(
+            "search",
+            "Search areas, places and events",
         )))
         .subcommand(sections::Common::augment_subcommands(section(
             "common",
@@ -392,8 +406,13 @@ fn dispatch(section: &str, sub_matches: &ArgMatches) -> Result<()> {
                 command::matrix::send_matrix_message(&args)
             }
         },
+        "search" => match sections::Search::from_arg_matches(sub_matches)? {
+            sections::Search::All(args) => command::common::search(&args),
+            sections::Search::Area(args) => command::common::search_typed(&args, "area"),
+            sections::Search::Place(args) => command::common::search_typed(&args, "place"),
+            sections::Search::Event(args) => command::common::search_typed(&args, "event"),
+        },
         "common" => match sections::Common::from_arg_matches(sub_matches)? {
-            sections::Common::Search(args) => command::common::search(&args),
             sections::Common::RPC(args) => command::common::rpc(&args),
         },
         _ => unreachable!("all sections are explicitly matched"),
