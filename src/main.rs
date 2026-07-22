@@ -126,6 +126,8 @@ mod sections {
         GetEvents(command::event::GetEventsArgs),
         /// Get event by id
         GetEvent(command::event::GetEventArgs),
+        /// Update event by id
+        UpdateEvent(command::event::UpdateEventArgs),
         /// Delete event by id
         DeleteEvent(command::event::DeleteEventArgs),
     }
@@ -381,6 +383,7 @@ fn dispatch(section: &str, sub_matches: &ArgMatches) -> Result<()> {
             sections::Event::CreateEvent(args) => command::event::create_event(&args),
             sections::Event::GetEvents(args) => command::event::get_events(&args),
             sections::Event::GetEvent(args) => command::event::get_event(&args),
+            sections::Event::UpdateEvent(args) => command::event::update_event(&args),
             sections::Event::DeleteEvent(args) => command::event::delete_event(&args),
         },
         "place-import" => match sections::PlaceImport::from_arg_matches(sub_matches)? {

@@ -63,6 +63,44 @@ pub fn get_event(args: &GetEventArgs) -> Result<()> {
 }
 
 #[derive(Args)]
+pub struct UpdateEventArgs {
+    pub id: i64,
+    #[arg(long)]
+    pub area_id: Option<i64>,
+    #[clap(allow_hyphen_values = true)]
+    #[arg(long)]
+    pub lat: Option<f64>,
+    #[clap(allow_hyphen_values = true)]
+    #[arg(long)]
+    pub lon: Option<f64>,
+    #[arg(long)]
+    pub name: Option<String>,
+    #[arg(long)]
+    pub website: Option<String>,
+    #[arg(long = "starts-at")]
+    pub starts_at: Option<String>,
+    #[arg(long = "ends-at")]
+    pub ends_at: Option<String>,
+    #[arg(long = "cron-schedule")]
+    pub cron_schedule: Option<String>,
+}
+
+pub fn update_event(args: &UpdateEventArgs) -> Result<()> {
+    let params = json!({
+        "id": args.id,
+        "area_id": args.area_id,
+        "lat": args.lat,
+        "lon": args.lon,
+        "name": args.name,
+        "website": args.website,
+        "starts_at": args.starts_at,
+        "ends_at": args.ends_at,
+        "cron_schedule": args.cron_schedule,
+    });
+    rpc::call("update_event", params)?.print()
+}
+
+#[derive(Args)]
 pub struct DeleteEventArgs {
     pub id: i64,
 }
