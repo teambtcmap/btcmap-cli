@@ -145,6 +145,30 @@ mod sections {
     }
 
     #[derive(Subcommand)]
+    pub enum ElectrumServer {
+        /// List electrum servers used to query wallet balances. Servers with higher priority are tried first.
+        List(command::electrum_server::ListArgs),
+        /// Add a new electrum server.
+        Add(command::electrum_server::AddArgs),
+        /// Update an existing electrum server. Only the fields you pass are changed.
+        Update(command::electrum_server::UpdateArgs),
+        /// Soft-delete an electrum server. Use --include-deleted when listing to see it again.
+        Remove(command::electrum_server::RemoveArgs),
+    }
+
+    #[derive(Subcommand)]
+    pub enum Wallet {
+        /// List wallets with their cached on-chain balances. Use --include-deleted to see soft-deleted rows.
+        List(command::wallet::ListArgs),
+        /// Add a new wallet to the wallet table. The xpub is scanned by the background refresher every 5 minutes.
+        Add(command::wallet::AddArgs),
+        /// Update an existing wallet. Only the fields you pass are changed.
+        Update(command::wallet::UpdateArgs),
+        /// Soft-delete a wallet. Use --include-deleted when listing to see it again.
+        Remove(command::wallet::RemoveArgs),
+    }
+
+    #[derive(Subcommand)]
     pub enum Setup {
         /// Set a JSON RPC API URL
         SetServer(command::setup::SetServerArgs),
@@ -234,6 +258,14 @@ fn build_cli() -> Command {
         .subcommand(sections::PlaceImport::augment_subcommands(section(
             "place-import",
             "Place submission and review",
+        )))
+        .subcommand(sections::ElectrumServer::augment_subcommands(section(
+            "electrum-server",
+            "Electrum servers used by get_wallets to query balances",
+        )))
+        .subcommand(sections::Wallet::augment_subcommands(section(
+            "wallet",
+            "Wallets scanned for on-chain balances",
         )))
         .subcommand(sections::Setup::augment_subcommands(section(
             "setup",
@@ -395,6 +427,18 @@ fn dispatch(section: &str, sub_matches: &ArgMatches) -> Result<()> {
                 command::import::revoke_submitted_place(&args)
             }
             sections::PlaceImport::ListOrigins => command::import::list_origins(),
+        },
+        "electrum-server" => match sections::ElectrumServer::from_arg_matches(sub_matches)? {
+            sections::ElectrumServer::List(args) => command::electrum_server::list(&args),
+            sections::ElectrumServer::Add(args) => command::electrum_server::add(&args),
+            sections::ElectrumServer::Update(args) => command::electrum_server::update(&args),
+            sections::ElectrumServer::Remove(args) => command::electrum_server::remove(&args),
+        },
+        "wallet" => match sections::Wallet::from_arg_matches(sub_matches)? {
+            sections::Wallet::List(args) => command::wallet::list(&args),
+            sections::Wallet::Add(args) => command::wallet::add(&args),
+            sections::Wallet::Update(args) => command::wallet::update(&args),
+            sections::Wallet::Remove(args) => command::wallet::remove(&args),
         },
         "setup" => match sections::Setup::from_arg_matches(sub_matches)? {
             sections::Setup::SetServer(_) | sections::Setup::State(_) => {
