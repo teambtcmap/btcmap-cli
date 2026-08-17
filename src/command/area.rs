@@ -76,6 +76,10 @@ pub fn generate_areas_elements_mapping() -> Result<()> {
     rpc::call("generate_areas_elements_mapping", json!({}))?.print()
 }
 
+pub fn generate_bboxes() -> Result<()> {
+    rpc::call("generate_area_bboxes", json!({}))?.print()
+}
+
 pub fn generate_area_icons() -> Result<()> {
     rpc::call("generate_area_icons", json!({}))?.print()
 }

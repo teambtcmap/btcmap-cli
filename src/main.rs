@@ -74,6 +74,8 @@ mod sections {
         SetAreaImage(command::area::SetAreaImageArgs),
         /// Ensure that elements and areas are correctly mapped to each other. You need to provide element id range in order to operate on a specific slice of elements
         GenerateAreasElementsMapping,
+        /// Recompute the bounding box of every area from its stored GeoJSON, writing corrected values back to the area row
+        GenerateBboxes,
         /// Download and cache every area icon referenced by the icon:square tag, reporting how many URLs were tried, how many images were inserted, and how many were already identical to the cached copy
         GenerateAreaIcons,
     }
@@ -376,6 +378,7 @@ fn dispatch(section: &str, sub_matches: &ArgMatches) -> Result<()> {
             sections::Area::RemoveAreaTag(args) => area::remove_area_tag(&args),
             sections::Area::SetAreaImage(args) => area::set_area_image(&args),
             sections::Area::GenerateAreasElementsMapping => area::generate_areas_elements_mapping(),
+            sections::Area::GenerateBboxes => area::generate_bboxes(),
             sections::Area::GenerateAreaIcons => area::generate_area_icons(),
         },
         "admin" => match sections::Admin::from_arg_matches(sub_matches)? {
