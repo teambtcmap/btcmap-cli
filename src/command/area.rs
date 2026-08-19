@@ -3,7 +3,7 @@ use crate::{
     Result,
 };
 use clap::Args;
-use serde_json::{json, Value};
+use serde_json::{json, Map, Value};
 
 #[derive(Args)]
 pub struct GetAreaArgs {
@@ -20,6 +20,24 @@ pub fn get_area(args: &GetAreaArgs) -> Result<()> {
             error: it.error,
         })?
         .print()
+}
+
+#[derive(Args)]
+pub struct AddAreaArgs {
+    #[arg(long)]
+    pub alias: String,
+    #[arg(long = "geojson")]
+    pub geojson: String,
+}
+
+pub fn add_area(args: &AddAreaArgs) -> Result<()> {
+    let geo_json: Value = serde_json::from_str(&args.geojson)
+        .map_err(|e| format!("invalid --geojson: not a valid JSON value ({e})"))?;
+    let mut tags = Map::new();
+    tags.insert("url_alias".into(), Value::String(args.alias.clone()));
+    tags.insert("name".into(), Value::String(args.alias.clone()));
+    tags.insert("geo_json".into(), geo_json);
+    rpc::call("add_area", json!({ "tags": Value::Object(tags) }))?.print()
 }
 
 #[derive(Args)]

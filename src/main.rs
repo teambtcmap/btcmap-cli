@@ -66,6 +66,9 @@ mod sections {
     pub enum Area {
         /// Fetch area by either numeric id or string alias (th)
         GetArea(command::area::GetAreaArgs),
+        /// Create a new area. Alias is required; geojson must be a valid GeoJSON Feature object
+        #[command(name = "add")]
+        AddArea(command::area::AddAreaArgs),
         /// Set tag to a certain area. You can use either numeric id or a string alias (th)
         SetAreaTag(command::area::SetAreaTagArgs),
         /// Remove tag from a certain area. You can use either numeric id or a string alias (th)
@@ -374,6 +377,7 @@ fn dispatch(section: &str, sub_matches: &ArgMatches) -> Result<()> {
         },
         "area" => match sections::Area::from_arg_matches(sub_matches)? {
             sections::Area::GetArea(args) => area::get_area(&args),
+            sections::Area::AddArea(args) => area::add_area(&args),
             sections::Area::SetAreaTag(args) => area::set_area_tag(&args),
             sections::Area::RemoveAreaTag(args) => area::remove_area_tag(&args),
             sections::Area::SetAreaImage(args) => area::set_area_image(&args),
