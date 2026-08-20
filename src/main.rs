@@ -76,7 +76,7 @@ mod sections {
         /// Set an image for an area. You can use either numeric id or a string alias. The image file is read from disk; its format is auto-detected server-side
         SetAreaImage(command::area::SetAreaImageArgs),
         /// Ensure that elements and areas are correctly mapped to each other. You need to provide element id range in order to operate on a specific slice of elements
-        GenerateAreasElementsMapping,
+        GenerateElementMapping,
         /// Recompute the bounding box of every area from its stored GeoJSON, writing corrected values back to the area row
         GenerateBboxes,
         /// Download and cache every area icon referenced by the icon:square tag, reporting how many URLs were tried, how many images were inserted, and how many were already identical to the cached copy
@@ -381,7 +381,7 @@ fn dispatch(section: &str, sub_matches: &ArgMatches) -> Result<()> {
             sections::Area::SetAreaTag(args) => area::set_area_tag(&args),
             sections::Area::RemoveAreaTag(args) => area::remove_area_tag(&args),
             sections::Area::SetAreaImage(args) => area::set_area_image(&args),
-            sections::Area::GenerateAreasElementsMapping => area::generate_areas_elements_mapping(),
+            sections::Area::GenerateElementMapping => area::generate_element_mapping(),
             sections::Area::GenerateBboxes => area::generate_bboxes(),
             sections::Area::GenerateAreaIcons => area::generate_area_icons(),
         },

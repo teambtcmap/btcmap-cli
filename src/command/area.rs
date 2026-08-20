@@ -90,7 +90,7 @@ pub fn set_area_image(args: &SetAreaImageArgs) -> Result<()> {
     .print()
 }
 
-pub fn generate_areas_elements_mapping() -> Result<()> {
+pub fn generate_element_mapping() -> Result<()> {
     rpc::call("generate_areas_elements_mapping", json!({}))?.print()
 }
 
