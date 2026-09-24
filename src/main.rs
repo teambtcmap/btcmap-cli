@@ -126,7 +126,7 @@ mod sections {
 
     #[derive(Subcommand)]
     pub enum Event {
-        /// Add a new event. Omit --starts-at/--ends-at/--cron-schedule for a permanent event with no fixed schedule
+        /// Add a new event. Omit --starts-at/--ends-at for a permanent event with no fixed schedule. Use --timezone for timestamps given without an offset
         CreateEvent(command::event::CreateEventArgs),
         /// Get all events. By default soft-deleted and past events are excluded
         GetEvents(command::event::GetEventsArgs),

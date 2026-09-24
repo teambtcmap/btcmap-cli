@@ -22,15 +22,18 @@ pub struct CreateEventArgs {
     /// URL with up-to-date event details
     #[arg(long)]
     pub website: String,
-    /// Start time as an RFC 3339 timestamp. Omit for a permanent event with no fixed schedule
+    /// Start time. Use RFC 3339 with an offset (e.g. 2025-08-28T19:00:00+07:00),
+    /// or a local time without an offset together with --timezone. Omit for a
+    /// permanent event with no fixed schedule
     #[arg(long = "starts-at")]
     pub starts_at: Option<String>,
-    /// End time as an RFC 3339 timestamp
+    /// End time, same formats as --starts-at
     #[arg(long = "ends-at")]
     pub ends_at: Option<String>,
-    /// Cron expression describing when the event recurs
-    #[arg(long = "cron-schedule")]
-    pub cron_schedule: Option<String>,
+    /// Timezone for timestamps given without an offset: "auto" infers it from
+    /// lat/lon, or pass an IANA name like Europe/Berlin
+    #[arg(long)]
+    pub timezone: Option<String>,
 }
 
 pub fn create_event(args: &CreateEventArgs) -> Result<()> {
@@ -42,7 +45,7 @@ pub fn create_event(args: &CreateEventArgs) -> Result<()> {
         "website": args.website,
         "starts_at": args.starts_at,
         "ends_at": args.ends_at,
-        "cron_schedule": args.cron_schedule,
+        "timezone": args.timezone,
     });
     rpc::call("create_event", params)?.print()
 }
@@ -96,24 +99,23 @@ pub struct UpdateEventArgs {
     /// URL with up-to-date event details
     #[arg(long)]
     pub website: Option<String>,
-    /// Start time as an RFC 3339 timestamp
+    /// Start time. Use RFC 3339 with an offset, or a local time without an
+    /// offset together with --timezone
     #[arg(long = "starts-at")]
     pub starts_at: Option<String>,
     /// Clear the start time, turning the event into a permanent one
     #[arg(long, conflicts_with = "starts_at")]
     pub clear_starts_at: bool,
-    /// End time as an RFC 3339 timestamp
+    /// End time, same formats as --starts-at
     #[arg(long = "ends-at")]
     pub ends_at: Option<String>,
     /// Clear the end time
     #[arg(long, conflicts_with = "ends_at")]
     pub clear_ends_at: bool,
-    /// Cron expression describing when the event recurs
-    #[arg(long = "cron-schedule")]
-    pub cron_schedule: Option<String>,
-    /// Clear the cron schedule
-    #[arg(long, conflicts_with = "cron_schedule")]
-    pub clear_cron_schedule: bool,
+    /// Timezone for timestamps given without an offset: "auto" infers it from
+    /// lat/lon, or pass an IANA name like Europe/Berlin
+    #[arg(long)]
+    pub timezone: Option<String>,
 }
 
 fn put_nullable<T: Into<Value>>(
@@ -153,12 +155,9 @@ pub fn update_event(args: &UpdateEventArgs) -> Result<()> {
         args.ends_at.as_deref(),
         args.clear_ends_at,
     );
-    put_nullable(
-        &mut params,
-        "cron_schedule",
-        args.cron_schedule.as_deref(),
-        args.clear_cron_schedule,
-    );
+    if let Some(timezone) = args.timezone.as_deref() {
+        params.insert("timezone".into(), json!(timezone));
+    }
     rpc::call("update_event", Value::Object(params))?.print()
 }
 
