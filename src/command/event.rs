@@ -22,11 +22,11 @@ pub struct CreateEventArgs {
     /// URL with up-to-date event details
     #[arg(long)]
     pub website: String,
-    /// Start time. Use RFC 3339 with an offset (e.g. 2025-08-28T19:00:00+07:00),
-    /// or a local time without an offset together with --timezone. Omit for a
-    /// permanent event with no fixed schedule
+    /// Start time. Required. Use RFC 3339 with an offset
+    /// (e.g. 2025-08-28T19:00:00+07:00), or a local time without an offset
+    /// together with --timezone
     #[arg(long = "starts-at")]
-    pub starts_at: Option<String>,
+    pub starts_at: String,
     /// End time, same formats as --starts-at
     #[arg(long = "ends-at")]
     pub ends_at: Option<String>,
@@ -100,12 +100,9 @@ pub struct UpdateEventArgs {
     #[arg(long)]
     pub website: Option<String>,
     /// Start time. Use RFC 3339 with an offset, or a local time without an
-    /// offset together with --timezone
+    /// offset together with --timezone. Required field: cannot be cleared once set
     #[arg(long = "starts-at")]
     pub starts_at: Option<String>,
-    /// Clear the start time, turning the event into a permanent one
-    #[arg(long, conflicts_with = "starts_at")]
-    pub clear_starts_at: bool,
     /// End time, same formats as --starts-at
     #[arg(long = "ends-at")]
     pub ends_at: Option<String>,
@@ -147,7 +144,7 @@ pub fn update_event(args: &UpdateEventArgs) -> Result<()> {
         &mut params,
         "starts_at",
         args.starts_at.as_deref(),
-        args.clear_starts_at,
+        false,
     );
     put_nullable(
         &mut params,
