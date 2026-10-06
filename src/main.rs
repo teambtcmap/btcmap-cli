@@ -1,5 +1,6 @@
 use std::{env, error::Error};
 mod command;
+mod rest;
 mod rpc;
 mod settings;
 use clap::{Arg, ArgAction, ArgMatches, Command, FromArgMatches, Subcommand};
@@ -64,13 +65,15 @@ mod sections {
 
     #[derive(Subcommand)]
     pub enum Area {
-        /// Fetch area by either numeric id or string alias (th)
+        /// Fetch area by either numeric id or string alias through the v4 REST API
+        #[command(name = "get")]
         GetArea(command::area::GetAreaArgs),
-        /// Create a new area. Alias is required; geojson must be a valid GeoJSON Feature object
+        /// Create a new area through the v4 REST API. Alias and type are required; geojson must be valid GeoJSON
         #[command(name = "add")]
         AddArea(command::area::AddAreaArgs),
-        /// Set tag to a certain area. You can use either numeric id or a string alias (th)
-        SetAreaTag(command::area::SetAreaTagArgs),
+        /// Partially update an area through the v4 REST API. Only the fields you pass are changed; use --clear-description/--clear-contact to remove values
+        #[command(name = "update")]
+        UpdateArea(command::area::UpdateAreaArgs),
         /// Remove tag from a certain area. You can use either numeric id or a string alias (th)
         RemoveAreaTag(command::area::RemoveAreaTagArgs),
         /// Set an image for an area. You can use either numeric id or a string alias. The image file is read from disk; its format is auto-detected server-side
@@ -383,7 +386,7 @@ fn dispatch(section: &str, sub_matches: &ArgMatches) -> Result<()> {
         "area" => match sections::Area::from_arg_matches(sub_matches)? {
             sections::Area::GetArea(args) => area::get_area(&args),
             sections::Area::AddArea(args) => area::add_area(&args),
-            sections::Area::SetAreaTag(args) => area::set_area_tag(&args),
+            sections::Area::UpdateArea(args) => area::update_area(&args),
             sections::Area::RemoveAreaTag(args) => area::remove_area_tag(&args),
             sections::Area::SetAreaImage(args) => area::set_area_image(&args),
             sections::Area::GenerateElementMapping => area::generate_element_mapping(),

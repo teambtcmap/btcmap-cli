@@ -1,7 +1,4 @@
-use crate::{
-    rpc::{self, RpcResponse},
-    Result,
-};
+use crate::{rest, rpc, Result};
 use clap::Args;
 use serde_json::{json, Map, Value};
 
@@ -10,22 +7,24 @@ pub struct GetAreaArgs {
     pub id: String,
 }
 
+/// Fetch an area by numeric id or url alias through the v4 REST API.
 pub fn get_area(args: &GetAreaArgs) -> Result<()> {
-    rpc::call("get_area", json!({"id": args.id}))
-        .map(|it| RpcResponse {
-            result: it.result.map(|mut it| {
-                it["tags"].as_object_mut().unwrap().remove("geo_json");
-                it
-            }),
-            error: it.error,
-        })?
-        .print()
+    rest::get(&format!("/areas/{}", rest::encode_path_segment(&args.id)))?.print()
 }
 
 #[derive(Args)]
 pub struct AddAreaArgs {
+    /// URL-friendly identifier for the area, used in btcmap.org links (must be
+    /// unique)
     #[arg(long)]
     pub alias: String,
+    /// Human readable area name. Defaults to the alias when omitted
+    #[arg(long)]
+    pub name: Option<String>,
+    /// Area type, e.g. `community` or `country`
+    #[arg(long = "type")]
+    pub r#type: String,
+    /// Area geometry as a GeoJSON Feature, geometry or FeatureCollection
     #[arg(long = "geojson")]
     pub geojson: String,
 }
@@ -33,25 +32,90 @@ pub struct AddAreaArgs {
 pub fn add_area(args: &AddAreaArgs) -> Result<()> {
     let geo_json: Value = serde_json::from_str(&args.geojson)
         .map_err(|e| format!("invalid --geojson: not a valid JSON value ({e})"))?;
-    let mut tags = Map::new();
-    tags.insert("url_alias".into(), Value::String(args.alias.clone()));
-    tags.insert("name".into(), Value::String(args.alias.clone()));
-    tags.insert("geo_json".into(), geo_json);
-    rpc::call("add_area", json!({ "tags": Value::Object(tags) }))?.print()
+    let name = args.name.clone().unwrap_or_else(|| args.alias.clone());
+    rest::post(
+        "/areas",
+        json!({
+            "name": name,
+            "type": args.r#type,
+            "url_alias": args.alias,
+            "geo_json": geo_json,
+        }),
+    )?
+    .print()
 }
 
 #[derive(Args)]
-pub struct SetAreaTagArgs {
+pub struct UpdateAreaArgs {
+    /// Area id or url alias
     pub id: String,
-    pub name: String,
-    pub value: String,
+    /// New area name
+    #[arg(long)]
+    pub name: Option<String>,
+    /// New area type, e.g. `community` or `country`
+    #[arg(long = "type")]
+    pub r#type: Option<String>,
+    /// New description
+    #[arg(long, conflicts_with = "clear_description")]
+    pub description: Option<String>,
+    /// Remove the description
+    #[arg(long)]
+    pub clear_description: bool,
+    /// New geometry as a GeoJSON Feature, geometry or FeatureCollection
+    #[arg(long)]
+    pub geojson: Option<String>,
+    /// Set a contact channel, as CHANNEL=VALUE. Repeatable
+    #[arg(long = "contact", value_name = "CHANNEL=VALUE")]
+    pub contact: Vec<String>,
+    /// Remove a contact channel. Repeatable
+    #[arg(long = "clear-contact", value_name = "CHANNEL")]
+    pub clear_contact: Vec<String>,
 }
 
-pub fn set_area_tag(args: &SetAreaTagArgs) -> Result<()> {
-    let value: Value = serde_json::from_str(&args.value)?;
-    rpc::call(
-        "set_area_tag",
-        json!({"id": args.id,"name": args.name, "value": value}),
+/// Partially update an area through the v4 REST API. Only the fields you pass
+/// are changed; `--clear-description` and `--clear-contact` remove values.
+pub fn update_area(args: &UpdateAreaArgs) -> Result<()> {
+    let mut body = Map::new();
+
+    if let Some(name) = &args.name {
+        body.insert("name".into(), json!(name));
+    }
+    if let Some(r#type) = &args.r#type {
+        body.insert("type".into(), json!(r#type));
+    }
+    if let Some(description) = &args.description {
+        body.insert("description".into(), json!(description));
+    }
+    if args.clear_description {
+        body.insert("description".into(), Value::Null);
+    }
+    if let Some(geojson) = &args.geojson {
+        let geo_json: Value = serde_json::from_str(geojson)
+            .map_err(|e| format!("invalid --geojson: not a valid JSON value ({e})"))?;
+        body.insert("geo_json".into(), geo_json);
+    }
+
+    let mut contact = Map::new();
+    for entry in &args.contact {
+        let (channel, value) = entry
+            .split_once('=')
+            .ok_or_else(|| format!("invalid --contact '{entry}': expected CHANNEL=VALUE"))?;
+        contact.insert(channel.to_string(), json!(value));
+    }
+    for channel in &args.clear_contact {
+        contact.insert(channel.to_string(), Value::Null);
+    }
+    if !contact.is_empty() {
+        body.insert("contact".into(), Value::Object(contact));
+    }
+
+    if body.is_empty() {
+        return Err("nothing to update: pass at least one field".into());
+    }
+
+    rest::patch(
+        &format!("/areas/{}", rest::encode_path_segment(&args.id)),
+        Value::Object(body),
     )?
     .print()
 }
