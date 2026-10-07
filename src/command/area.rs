@@ -27,22 +27,25 @@ pub struct AddAreaArgs {
     /// Area geometry as a GeoJSON Feature, geometry or FeatureCollection
     #[arg(long = "geojson")]
     pub geojson: String,
+    /// Optional description shown on the area profile
+    #[arg(long)]
+    pub description: Option<String>,
 }
 
 pub fn add_area(args: &AddAreaArgs) -> Result<()> {
     let geo_json: Value = serde_json::from_str(&args.geojson)
         .map_err(|e| format!("invalid --geojson: not a valid JSON value ({e})"))?;
     let name = args.name.clone().unwrap_or_else(|| args.alias.clone());
-    rest::post(
-        "/areas",
-        json!({
-            "name": name,
-            "type": args.r#type,
-            "url_alias": args.alias,
-            "geo_json": geo_json,
-        }),
-    )?
-    .print()
+    let mut payload = json!({
+        "name": name,
+        "type": args.r#type,
+        "url_alias": args.alias,
+        "geo_json": geo_json,
+    });
+    if let Some(description) = &args.description {
+        payload["description"] = json!(description);
+    }
+    rest::post("/areas", payload)?.print()
 }
 
 #[derive(Args)]
